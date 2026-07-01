@@ -11,6 +11,9 @@ import { validate } from './config/env.validation';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { OtpModule } from './modules/otp/otp.module';
+import { SalonsModule } from './modules/salons/salons.module';
+import { ServicesModule } from './modules/services/services.module';
+import { StaffModule } from './modules/staff/staff.module';
 
 @Module({
   imports: [
@@ -29,6 +32,9 @@ import { OtpModule } from './modules/otp/otp.module';
     AuthModule,
     UsersModule,
     OtpModule,
+    SalonsModule,
+    ServicesModule,
+    StaffModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
