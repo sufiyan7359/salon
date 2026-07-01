@@ -1,0 +1,9 @@
+@use 'variables' as *;
+
+.section-label {
+  font-size: $fs-sm;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $color-text-muted;
+  margin: $space-5 0 $space-3;
+}

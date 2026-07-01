@@ -10,12 +10,6 @@
   width: 100%;
 }
 
-.join-skeleton {
-  display: flex;
-  flex-direction: column;
-  gap: $space-4;
-}
-
 .step-indicator {
   display: flex;
   justify-content: center;
@@ -42,35 +36,6 @@
 
 .step-container {
   position: relative;
-}
-
-.step {
-  display: flex;
-  flex-direction: column;
-  gap: $space-4;
-
-  h1 {
-    font-size: $fs-xl;
-  }
-}
-
-.step__subtitle {
-  color: $color-text-muted;
-  font-size: $fs-sm;
-  margin-top: -$space-2;
-}
-
-.step__section-title {
-  font-size: $fs-base;
-  margin-top: $space-2;
-}
-
-.dev-hint {
-  background: $color-surface-alt;
-  border-radius: $radius-sm;
-  padding: $space-2 $space-3;
-  font-size: $fs-sm;
-  color: $color-text-muted;
 }
 
 .service-select-list {
@@ -118,23 +83,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: $space-2;
-}
-
-.staff-chip {
-  @include touch-target;
-  padding: $space-2 $space-4;
-  border-radius: $radius-pill;
-  border: 1.5px solid $color-border;
-  background: $color-surface;
-  font-size: $fs-sm;
-  cursor: pointer;
-  @include press-scale;
-
-  &.selected {
-    border-color: $color-primary;
-    background: $color-primary;
-    color: $color-text-inverse;
-  }
 }
 
 .summary-card {

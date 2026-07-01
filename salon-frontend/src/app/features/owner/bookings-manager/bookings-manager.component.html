@@ -1,0 +1,86 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Bookings</h1>
+  </div>
+
+  @if (loading()) {
+    <div class="list-skeleton">
+      <app-skeleton height="80px" radius="1rem" />
+      <app-skeleton height="80px" radius="1rem" />
+    </div>
+  } @else {
+    <h2 class="section-label">Upcoming ({{ upcoming().length }})</h2>
+    @if (upcoming().length === 0) {
+      <div class="empty-state">
+        <h2>No upcoming bookings</h2>
+        <p>Advance bookings customers make will show up here for you to confirm.</p>
+      </div>
+    } @else {
+      <div class="entity-list">
+        @for (booking of upcoming(); track booking.id) {
+          <div class="entity-card" @fadeIn>
+            <div class="entity-card__info">
+              <span class="entity-card__name">{{ booking.customer?.name || booking.customer?.phoneNumber }}</span>
+              <span class="entity-card__meta">
+                {{ booking.service.name }} &middot; {{ booking.bookingDate }} at {{ booking.bookingTime }}
+                @if (booking.staff) { &middot; with {{ booking.staff.name }} }
+              </span>
+            </div>
+            <div class="entity-card__actions">
+              <span class="pill" [class]="booking.status === 'confirmed' ? 'pill--success' : 'pill--warning'">
+                {{ booking.status }}
+              </span>
+              @if (booking.status === 'pending') {
+                <button
+                  type="button"
+                  class="btn btn--primary btn--sm"
+                  [disabled]="actioningId() === booking.id"
+                  (click)="confirm(booking)"
+                >
+                  Confirm
+                </button>
+              }
+              @if (booking.status === 'confirmed') {
+                <button
+                  type="button"
+                  class="btn btn--primary btn--sm"
+                  [disabled]="actioningId() === booking.id"
+                  (click)="complete(booking)"
+                >
+                  Complete
+                </button>
+              }
+              <button
+                type="button"
+                class="btn btn--ghost btn--sm"
+                [disabled]="actioningId() === booking.id"
+                (click)="cancel(booking)"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    @if (past().length > 0) {
+      <h2 class="section-label">Past ({{ past().length }})</h2>
+      <div class="entity-list">
+        @for (booking of past(); track booking.id) {
+          <div class="entity-card">
+            <div class="entity-card__info">
+              <span class="entity-card__name">{{ booking.customer?.name || booking.customer?.phoneNumber }}</span>
+              <span class="entity-card__meta">
+                {{ booking.service.name }} &middot; {{ booking.bookingDate }} at {{ booking.bookingTime }}
+              </span>
+            </div>
+            <span class="pill" [class]="booking.status === 'completed' ? 'pill--success' : 'pill--danger'">
+              {{ booking.status }}
+            </span>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

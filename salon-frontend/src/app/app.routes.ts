@@ -29,6 +29,13 @@ export const routes: Routes = [
             './features/customer/live-tracking/live-tracking.component'
           ).then((m) => m.LiveTrackingComponent),
       },
+      {
+        path: 'book',
+        loadComponent: () =>
+          import('./features/customer/booking/booking.component').then(
+            (m) => m.BookingComponent,
+          ),
+      },
     ],
   },
   {
@@ -63,6 +70,13 @@ export const routes: Routes = [
           import(
             './features/owner/staff-manager/staff-manager.component'
           ).then((m) => m.StaffManagerComponent),
+      },
+      {
+        path: 'bookings',
+        loadComponent: () =>
+          import(
+            './features/owner/bookings-manager/bookings-manager.component'
+          ).then((m) => m.BookingsManagerComponent),
       },
     ],
   },

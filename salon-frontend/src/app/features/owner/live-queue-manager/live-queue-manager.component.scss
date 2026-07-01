@@ -66,20 +66,3 @@
   flex-wrap: wrap;
   gap: $space-2;
 }
-
-.staff-chip {
-  @include touch-target;
-  padding: $space-2 $space-4;
-  border-radius: $radius-pill;
-  border: 1.5px solid $color-border;
-  background: $color-surface;
-  font-size: $fs-sm;
-  cursor: pointer;
-  @include press-scale;
-
-  &.selected {
-    border-color: $color-primary;
-    background: $color-primary;
-    color: $color-text-inverse;
-  }
-}

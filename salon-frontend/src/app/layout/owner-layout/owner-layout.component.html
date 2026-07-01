@@ -83,6 +83,7 @@
         </a>
         <a routerLink="/owner/services" routerLinkActive="active">Services</a>
         <a routerLink="/owner/staff" routerLinkActive="active">Staff</a>
+        <a routerLink="/owner/bookings" routerLinkActive="active">Bookings</a>
       </nav>
       <button type="button" class="owner-sidebar__logout" (click)="logout()">Log out</button>
     </aside>
@@ -95,6 +96,7 @@
       <a routerLink="/owner" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Queue</a>
       <a routerLink="/owner/services" routerLinkActive="active">Services</a>
       <a routerLink="/owner/staff" routerLinkActive="active">Staff</a>
+      <a routerLink="/owner/bookings" routerLinkActive="active">Bookings</a>
       <button type="button" (click)="logout()">Log out</button>
     </nav>
   </div>
