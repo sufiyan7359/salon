@@ -10,18 +10,19 @@ import { QueueService } from '../../../core/services/queue.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { extractErrorMessage } from '../../../core/utils/http-error.util';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
-import { fadeSlide } from '../../../shared/animations/fade-slide.animation';
+import { fadeSlide, successPop } from '../../../shared/animations/fade-slide.animation';
 
 type Step = 'phone' | 'otp' | 'services' | 'confirm';
 
 const RESEND_COOLDOWN_SECONDS = 60;
+const SUCCESS_DISPLAY_MS = 700;
 
 @Component({
   selector: 'app-join-queue',
   imports: [FormsModule, SkeletonComponent],
   templateUrl: './join-queue.component.html',
   styleUrl: './join-queue.component.scss',
-  animations: [fadeSlide],
+  animations: [fadeSlide, successPop],
 })
 export class JoinQueueComponent implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
@@ -47,6 +48,7 @@ export class JoinQueueComponent implements OnInit, OnDestroy {
   readonly selectedServiceIds = signal<Set<string>>(new Set());
   readonly selectedStaffId = signal<string | undefined>(undefined);
   readonly joining = signal(false);
+  readonly joinSuccess = signal(false);
 
   private cooldownTimer?: ReturnType<typeof setInterval>;
 
@@ -168,6 +170,8 @@ export class JoinQueueComponent implements OnInit, OnDestroy {
         serviceIds: [...this.selectedServiceIds()],
         staffId: this.selectedStaffId(),
       });
+      this.joinSuccess.set(true);
+      await new Promise((resolve) => setTimeout(resolve, SUCCESS_DISPLAY_MS));
       await this.router.navigate(['/queue', entry.id]);
     } catch (error) {
       this.toast.error(extractErrorMessage(error));

@@ -4,7 +4,13 @@
 :host {
   display: flex;
   flex-direction: column;
-  padding-bottom: calc($space-10 + env(safe-area-inset-bottom, 0px));
+  // Reserve room for the fixed two-button CTA bar (mobile only) so content
+  // isn't permanently hidden behind it when scrolled to the bottom.
+  padding-bottom: calc(9.5rem + env(safe-area-inset-bottom, 0px));
+
+  @include desktop-up {
+    padding-bottom: $space-8;
+  }
 }
 
 .landing-skeleton {

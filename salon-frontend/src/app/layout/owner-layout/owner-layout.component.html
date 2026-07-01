@@ -1,5 +1,13 @@
 @if (loading()) {
   <div class="owner-loading">Loading your dashboard...</div>
+} @else if (loadError()) {
+  <div class="setup-screen">
+    <div class="setup-card">
+      <h1>Couldn't load your dashboard</h1>
+      <p class="setup-card__subtitle">Something went wrong reaching the server. Please try again.</p>
+      <button type="button" class="btn btn--primary btn--block" (click)="loadSalon()">Retry</button>
+    </div>
+  </div>
 } @else if (!salonService.salon()) {
   <div class="setup-screen">
     <div class="setup-card">
@@ -95,8 +103,8 @@
         <button type="button" (click)="logout()">Log out</button>
       </header>
 
-      <main class="owner-main">
-        <router-outlet />
+      <main class="owner-main" [@routeFade]="prepareRoute(outlet)">
+        <router-outlet #outlet="outlet" />
       </main>
     </div>
 

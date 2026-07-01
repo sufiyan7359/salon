@@ -114,3 +114,21 @@
   font-size: $fs-xs;
   color: $color-text-muted;
 }
+
+.step--center {
+  align-items: center;
+  text-align: center;
+  padding-top: $space-10;
+}
+
+.success-check {
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: $color-success;
+  color: $color-text-inverse;
+  font-size: 2.5rem;
+  line-height: 1;
+}

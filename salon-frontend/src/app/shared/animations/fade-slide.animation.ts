@@ -29,3 +29,13 @@ export const numberBump = trigger('numberBump', [
     animate('320ms cubic-bezier(0.34, 1.56, 0.64, 1)', style({ transform: 'scale(1)' })),
   ]),
 ]);
+
+export const successPop = trigger('successPop', [
+  transition(':enter', [
+    style({ opacity: 0, transform: 'scale(0.4)' }),
+    animate(
+      '450ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+      style({ opacity: 1, transform: 'scale(1)' }),
+    ),
+  ]),
+]);

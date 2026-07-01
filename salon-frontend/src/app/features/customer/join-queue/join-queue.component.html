@@ -142,7 +142,12 @@
       </div>
     }
 
-    @if (step() === 'confirm') {
+    @if (step() === 'confirm' && joinSuccess()) {
+      <div class="step step--center" @fadeSlide>
+        <div class="success-check" @successPop>&check;</div>
+        <h1>You're in the queue!</h1>
+      </div>
+    } @else if (step() === 'confirm') {
       <div class="step" @fadeSlide>
         <h1>Confirm & join</h1>
         <div class="summary-card">
