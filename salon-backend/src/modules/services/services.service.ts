@@ -1,6 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Service } from './entities/service.entity';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
@@ -57,5 +61,22 @@ export class ServicesService {
     this.salonsService.assertOwnership(salon, ownerId);
 
     await this.servicesRepository.remove(service);
+  }
+
+  async findActiveByIdsForSalon(
+    salonId: string,
+    serviceIds: string[],
+  ): Promise<Service[]> {
+    const services = await this.servicesRepository.find({
+      where: { id: In(serviceIds), salonId, isActive: true },
+    });
+
+    if (services.length !== serviceIds.length) {
+      throw new BadRequestException(
+        'One or more selected services are invalid or unavailable at this salon',
+      );
+    }
+
+    return services;
   }
 }
