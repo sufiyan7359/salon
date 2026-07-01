@@ -1,0 +1,154 @@
+@use 'sass:color';
+@use 'variables' as *;
+@use 'mixins' as *;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $space-8 $space-5;
+  max-width: 420px;
+  margin: 0 auto;
+  width: 100%;
+  text-align: center;
+  gap: $space-5;
+}
+
+.tracking-skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $space-4;
+  width: 100%;
+}
+
+.tracking {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $space-5;
+  width: 100%;
+}
+
+.token-ring {
+  position: relative;
+  width: 160px;
+  height: 160px;
+}
+
+.token-ring__svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.token-ring__track {
+  fill: none;
+  stroke: $color-surface-alt;
+  stroke-width: 8;
+}
+
+.token-ring__progress {
+  fill: none;
+  stroke: $color-primary;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 326.7;
+  transition: stroke-dashoffset 600ms $ease-standard, stroke 300ms $ease-standard;
+}
+
+.token-ring.completed .token-ring__progress {
+  stroke: $color-status-completed;
+}
+
+.token-ring.in_service .token-ring__progress {
+  stroke: $color-status-in-service;
+}
+
+.token-ring__content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.token-ring__label {
+  font-size: $fs-xs;
+  color: $color-text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.token-ring__number {
+  font-family: $font-display;
+  font-size: $fs-3xl;
+  font-weight: 700;
+  color: $color-text;
+}
+
+.status-badge {
+  display: inline-flex;
+  padding: $space-2 $space-5;
+  border-radius: $radius-pill;
+  font-weight: 600;
+  font-size: $fs-sm;
+  background: $color-surface-alt;
+  color: $color-text-muted;
+
+  &.waiting,
+  &.next {
+    background: rgba(245, 158, 11, 0.14);
+    color: color.adjust($color-warning, $lightness: -8%);
+  }
+
+  &.in_service {
+    background: $gradient-brand-soft;
+    color: $color-primary;
+  }
+
+  &.completed {
+    background: rgba(34, 197, 94, 0.12);
+    color: $color-success;
+  }
+
+  &.cancelled,
+  &.no_show {
+    background: rgba(239, 68, 68, 0.12);
+    color: $color-danger;
+  }
+}
+
+.stats-row {
+  display: flex;
+  gap: $space-8;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat__value {
+  font-family: $font-display;
+  font-size: $fs-2xl;
+  font-weight: 700;
+  color: $color-primary;
+}
+
+.stat__label {
+  font-size: $fs-xs;
+  color: $color-text-muted;
+}
+
+.services-summary {
+  font-size: $fs-sm;
+  color: $color-text-muted;
+}
+
+.tracking__message {
+  font-size: $fs-base;
+  color: $color-text-muted;
+}

@@ -1,0 +1,15 @@
+<div class="toast-stack">
+  @for (toast of toastService.toasts(); track toast.id) {
+    <div class="toast" [class]="toast.type" [@toastAnimation]>
+      <span class="toast__text">{{ toast.text }}</span>
+      <button
+        type="button"
+        class="toast__dismiss"
+        (click)="toastService.dismiss(toast.id)"
+        aria-label="Dismiss"
+      >
+        &times;
+      </button>
+    </div>
+  }
+</div>

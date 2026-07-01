@@ -1,0 +1,57 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-2;
+  @include touch-target;
+  padding: $space-3 $space-5;
+  border-radius: $radius-pill;
+  border: none;
+  font-family: $font-body;
+  font-size: $fs-base;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  @include press-scale;
+  transition: transform $duration-fast $ease-standard, box-shadow $duration-base $ease-standard, opacity $duration-base $ease-standard;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.btn--primary {
+  background: $gradient-brand;
+  color: $color-text-inverse;
+  box-shadow: $shadow-glow;
+}
+
+.btn--secondary {
+  background: $color-surface-alt;
+  color: $color-text;
+}
+
+.btn--ghost {
+  background: transparent;
+  color: $color-primary;
+  border: 1px solid $color-border;
+}
+
+.btn--danger {
+  background: $color-danger;
+  color: $color-text-inverse;
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.btn--sm {
+  padding: $space-2 $space-4;
+  font-size: $fs-sm;
+}

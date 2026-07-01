@@ -59,7 +59,7 @@ export class QueueService {
     });
 
     const saved = await this.queueRepository.save(entry);
-    this.emitQueueUpdated(dto.salonId);
+    this.emitQueueUpdated(dto.salonId, saved.id);
     return this.findByIdOrThrow(saved.id);
   }
 
@@ -135,7 +135,7 @@ export class QueueService {
     }
 
     const saved = await this.queueRepository.save(entry);
-    this.emitQueueUpdated(entry.salonId);
+    this.emitQueueUpdated(entry.salonId, entry.id);
     return saved;
   }
 
@@ -153,7 +153,7 @@ export class QueueService {
     entry.completedAt = new Date();
 
     const saved = await this.queueRepository.save(entry);
-    this.emitQueueUpdated(entry.salonId);
+    this.emitQueueUpdated(entry.salonId, entry.id);
     return saved;
   }
 
@@ -173,7 +173,7 @@ export class QueueService {
     entry.status = QueueStatus.NO_SHOW;
 
     const saved = await this.queueRepository.save(entry);
-    this.emitQueueUpdated(entry.salonId);
+    this.emitQueueUpdated(entry.salonId, entry.id);
     return saved;
   }
 
@@ -201,8 +201,12 @@ export class QueueService {
     entry.status = QueueStatus.CANCELLED;
 
     const saved = await this.queueRepository.save(entry);
-    this.emitQueueUpdated(entry.salonId);
+    this.emitQueueUpdated(entry.salonId, entry.id);
     return saved;
+  }
+
+  async getEntrySnapshot(id: string): Promise<QueueEntry> {
+    return this.findByIdOrThrow(id);
   }
 
   private async findByIdOrThrow(id: string): Promise<QueueEntry> {
@@ -270,7 +274,7 @@ export class QueueService {
     }));
   }
 
-  private emitQueueUpdated(salonId: string): void {
-    this.eventEmitter.emit('queue.updated', { salonId });
+  private emitQueueUpdated(salonId: string, entryId: string): void {
+    this.eventEmitter.emit('queue.updated', { salonId, entryId });
   }
 }

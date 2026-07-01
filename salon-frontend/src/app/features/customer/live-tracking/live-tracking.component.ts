@@ -1,0 +1,142 @@
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { QueueEntryWithPosition } from '../../../core/models/queue-entry.model';
+import { QueueService } from '../../../core/services/queue.service';
+import { SocketService } from '../../../core/services/socket.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { extractErrorMessage } from '../../../core/utils/http-error.util';
+import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
+import { fadeIn, numberBump } from '../../../shared/animations/fade-slide.animation';
+
+interface StatusChangedPayload {
+  entryId: string;
+  status: QueueEntryWithPosition['status'];
+  position: number;
+  peopleAhead: number;
+  estimatedWaitMinutes: number | null;
+}
+
+interface YourTurnSoonPayload {
+  entryId: string;
+  peopleAhead: number;
+}
+
+const STATUS_LABELS: Record<QueueEntryWithPosition['status'], string> = {
+  waiting: 'Waiting',
+  next: 'Up Next',
+  in_service: 'In Service',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+  no_show: "You were marked no-show",
+};
+
+@Component({
+  selector: 'app-live-tracking',
+  imports: [SkeletonComponent],
+  templateUrl: './live-tracking.component.html',
+  styleUrl: './live-tracking.component.scss',
+  animations: [fadeIn, numberBump],
+})
+export class LiveTrackingComponent implements OnInit, OnDestroy {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly queueService = inject(QueueService);
+  private readonly socketService = inject(SocketService);
+  private readonly toast = inject(ToastService);
+
+  readonly loading = signal(true);
+  readonly entry = signal<QueueEntryWithPosition | null>(null);
+  readonly leaving = signal(false);
+  readonly notFound = signal(false);
+
+  readonly statusLabel = computed(
+    () => STATUS_LABELS[this.entry()?.status ?? 'waiting'],
+  );
+  readonly isActive = computed(() =>
+    ['waiting', 'next', 'in_service'].includes(this.entry()?.status ?? ''),
+  );
+  readonly progressPercent = computed(() => {
+    const current = this.entry();
+    if (!current) return 0;
+    if (current.status === 'completed') return 100;
+    if (current.status === 'in_service') return 90;
+    return Math.min(80, Math.max(8, 80 - current.peopleAhead * 15));
+  });
+
+  private entryId = '';
+  private readonly subscriptions: Subscription[] = [];
+
+  async ngOnInit(): Promise<void> {
+    this.entryId = this.route.snapshot.paramMap.get('entryId') ?? '';
+    if (!this.entryId) {
+      this.notFound.set(true);
+      this.loading.set(false);
+      return;
+    }
+
+    await this.loadStatus();
+    this.socketService.joinQueueRoom(this.entryId);
+
+    this.subscriptions.push(
+      this.socketService
+        .on<StatusChangedPayload>('status_changed')
+        .subscribe((payload) => this.applyStatusChange(payload)),
+    );
+
+    this.subscriptions.push(
+      this.socketService
+        .on<YourTurnSoonPayload>('your_turn_soon')
+        .subscribe((payload) => {
+          if (payload.entryId !== this.entryId) return;
+          this.toast.show("You're almost up! Please head to the salon.", 'info');
+        }),
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.socketService.leaveQueueRoom(this.entryId);
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
+  }
+
+  async leaveQueue(): Promise<void> {
+    this.leaving.set(true);
+    try {
+      await this.queueService.leave(this.entryId);
+      this.toast.success('You left the queue');
+      await this.router.navigate(['/']);
+    } catch (error) {
+      this.toast.error(extractErrorMessage(error));
+    } finally {
+      this.leaving.set(false);
+    }
+  }
+
+  private async loadStatus(): Promise<void> {
+    try {
+      const entry = await this.queueService.getMyStatus(this.entryId);
+      this.entry.set(entry);
+      this.socketService.joinSalonRoom(entry.salonId);
+    } catch (error) {
+      this.notFound.set(true);
+      this.toast.error(extractErrorMessage(error));
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  private applyStatusChange(payload: StatusChangedPayload): void {
+    if (payload.entryId !== this.entryId) return;
+    this.entry.update((current) =>
+      current
+        ? {
+            ...current,
+            status: payload.status,
+            position: payload.position,
+            peopleAhead: payload.peopleAhead,
+            estimatedWaitMinutes: payload.estimatedWaitMinutes,
+          }
+        : current,
+    );
+  }
+}

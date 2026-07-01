@@ -1,0 +1,179 @@
+@if (loading()) {
+  <div class="join-skeleton">
+    <app-skeleton height="2rem" width="50%" />
+    <app-skeleton height="120px" radius="1rem" />
+    <app-skeleton height="120px" radius="1rem" />
+  </div>
+} @else {
+  <div class="step-indicator">
+    @for (s of ['phone', 'otp', 'services', 'confirm']; track s) {
+      <span
+        class="step-indicator__dot"
+        [class.active]="step() === s"
+        [class.done]="['phone','otp','services','confirm'].indexOf(step()) > ['phone','otp','services','confirm'].indexOf(s)"
+      ></span>
+    }
+  </div>
+
+  <div class="step-container">
+    @if (step() === 'phone') {
+      <div class="step" @fadeSlide>
+        <h1>Enter your mobile number</h1>
+        <p class="step__subtitle">We'll text you a one-time code to join the queue.</p>
+        <div class="form-field">
+          <label for="phone">Mobile number</label>
+          <input
+            id="phone"
+            type="tel"
+            placeholder="+91 98765 43210"
+            [ngModel]="phoneNumber()"
+            (ngModelChange)="phoneNumber.set($event)"
+            (keyup.enter)="sendOtp()"
+          />
+        </div>
+        <button
+          type="button"
+          class="btn btn--primary btn--block"
+          [disabled]="sendingOtp()"
+          (click)="sendOtp()"
+        >
+          {{ sendingOtp() ? 'Sending...' : 'Send OTP' }}
+        </button>
+      </div>
+    }
+
+    @if (step() === 'otp') {
+      <div class="step" @fadeSlide>
+        <h1>Enter the code</h1>
+        <p class="step__subtitle">Sent to {{ phoneNumber() }}</p>
+        @if (devOtpHint()) {
+          <p class="dev-hint">Dev mode &mdash; your code is <strong>{{ devOtpHint() }}</strong></p>
+        }
+        <div class="form-field">
+          <label for="otp">6-digit code</label>
+          <input
+            id="otp"
+            type="text"
+            inputmode="numeric"
+            maxlength="6"
+            placeholder="123456"
+            [ngModel]="otpCode()"
+            (ngModelChange)="otpCode.set($event)"
+            (keyup.enter)="verifyOtp()"
+          />
+        </div>
+        <div class="form-field">
+          <label for="name">Your name (optional)</label>
+          <input
+            id="name"
+            type="text"
+            placeholder="What should we call you?"
+            [ngModel]="customerName()"
+            (ngModelChange)="customerName.set($event)"
+          />
+        </div>
+        <button
+          type="button"
+          class="btn btn--primary btn--block"
+          [disabled]="verifying()"
+          (click)="verifyOtp()"
+        >
+          {{ verifying() ? 'Verifying...' : 'Verify & Continue' }}
+        </button>
+        <button
+          type="button"
+          class="btn btn--ghost btn--block"
+          [disabled]="resendCooldown() > 0 || sendingOtp()"
+          (click)="sendOtp()"
+        >
+          {{ resendCooldown() > 0 ? 'Resend in ' + resendCooldown() + 's' : 'Resend OTP' }}
+        </button>
+      </div>
+    }
+
+    @if (step() === 'services') {
+      <div class="step" @fadeSlide>
+        <h1>Choose your services</h1>
+        <p class="step__subtitle">Select everything you'd like done today.</p>
+
+        <div class="service-select-list">
+          @for (service of services(); track service.id) {
+            <label class="service-select" [class.selected]="selectedServiceIds().has(service.id)">
+              <input
+                type="checkbox"
+                [checked]="selectedServiceIds().has(service.id)"
+                (change)="toggleService(service.id)"
+              />
+              <span class="service-select__info">
+                <span class="service-select__name">{{ service.name }}</span>
+                <span class="service-select__meta">{{ service.durationMinutes }} min &middot; ₹{{ service.price }}</span>
+              </span>
+            </label>
+          }
+        </div>
+
+        @if (staff().length > 0) {
+          <h2 class="step__section-title">Preferred staff (optional)</h2>
+          <div class="staff-select-list">
+            <button
+              type="button"
+              class="staff-chip"
+              [class.selected]="selectedStaffId() === undefined"
+              (click)="selectStaff(undefined)"
+            >
+              No preference
+            </button>
+            @for (member of staff(); track member.id) {
+              <button
+                type="button"
+                class="staff-chip"
+                [class.selected]="selectedStaffId() === member.id"
+                (click)="selectStaff(member.id)"
+              >
+                {{ member.name }}
+              </button>
+            }
+          </div>
+        }
+
+        <button type="button" class="btn btn--primary btn--block" (click)="goToConfirm()">
+          Continue
+        </button>
+      </div>
+    }
+
+    @if (step() === 'confirm') {
+      <div class="step" @fadeSlide>
+        <h1>Confirm & join</h1>
+        <div class="summary-card">
+          @for (service of selectedServices(); track service.id) {
+            <div class="summary-card__row">
+              <span>{{ service.name }}</span>
+              <span>₹{{ service.price }}</span>
+            </div>
+          }
+          <div class="summary-card__divider"></div>
+          <div class="summary-card__row summary-card__row--total">
+            <span>Total ({{ totalDuration() }} min)</span>
+            <span>₹{{ totalPrice() }}</span>
+          </div>
+          @if (selectedStaffName(); as name) {
+            <p class="summary-card__staff">With {{ name }}</p>
+          }
+        </div>
+
+        <button type="button" class="btn btn--ghost btn--block" (click)="backToServices()">
+          Edit selection
+        </button>
+        <button
+          type="button"
+          class="btn btn--primary btn--block"
+          [disabled]="joining()"
+          (click)="confirmJoin()"
+        >
+          {{ joining() ? 'Joining...' : 'Join Queue' }}
+        </button>
+      </div>
+    }
+  </div>
+}

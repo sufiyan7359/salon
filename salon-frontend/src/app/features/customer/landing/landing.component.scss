@@ -1,0 +1,167 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc($space-10 + env(safe-area-inset-bottom, 0px));
+}
+
+.landing-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+  padding: $space-5;
+}
+
+.hero {
+  position: relative;
+}
+
+.hero__cover {
+  position: relative;
+  height: 220px;
+  background: $gradient-brand;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.hero__badge {
+  position: absolute;
+  top: $space-4;
+  right: $space-4;
+}
+
+.hero__body {
+  padding: $space-5;
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+
+  h1 {
+    font-size: $fs-2xl;
+  }
+}
+
+.hero__address,
+.hero__hours {
+  color: $color-text-muted;
+  font-size: $fs-sm;
+}
+
+.hero__description {
+  margin-top: $space-2;
+  font-size: $fs-base;
+}
+
+.section {
+  padding: 0 $space-5;
+  margin-top: $space-6;
+}
+
+.section__title {
+  font-size: $fs-lg;
+  margin-bottom: $space-4;
+}
+
+.service-list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.service-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  @include card;
+  padding: $space-4;
+  @include hover-lift;
+}
+
+.service-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.service-card__name {
+  font-weight: 600;
+}
+
+.service-card__category {
+  font-size: $fs-xs;
+  color: $color-text-muted;
+  text-transform: capitalize;
+}
+
+.service-card__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.service-card__duration {
+  font-size: $fs-xs;
+  color: $color-text-muted;
+}
+
+.service-card__price {
+  font-weight: 700;
+  color: $color-primary;
+}
+
+.staff-row {
+  display: flex;
+  gap: $space-4;
+  overflow-x: auto;
+  padding-bottom: $space-2;
+}
+
+.staff-avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $space-2;
+  min-width: 72px;
+}
+
+.staff-avatar__circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: $gradient-brand-soft;
+  color: $color-primary;
+  font-weight: 700;
+  font-size: $fs-lg;
+}
+
+.staff-avatar__name {
+  font-size: $fs-xs;
+  color: $color-text-muted;
+  text-align: center;
+}
+
+.cta-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: $space-4 $space-5 calc($space-4 + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top, $color-bg 60%, transparent);
+
+  @include desktop-up {
+    position: static;
+    max-width: 320px;
+    margin: $space-8 auto 0;
+    background: none;
+  }
+}

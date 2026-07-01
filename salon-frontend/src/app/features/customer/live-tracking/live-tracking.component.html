@@ -1,0 +1,73 @@
+@if (loading()) {
+  <div class="tracking-skeleton">
+    <app-skeleton height="140px" radius="50%" />
+    <app-skeleton height="1.5rem" width="60%" />
+    <app-skeleton height="100px" radius="1rem" />
+  </div>
+} @else if (notFound()) {
+  <div class="empty-state" @fadeIn>
+    <h2>We couldn't find that queue ticket</h2>
+    <p>It may have expired or already been completed.</p>
+  </div>
+} @else if (entry(); as e) {
+  <div class="tracking" @fadeIn>
+    <div class="token-ring" [class]="e.status">
+      <svg viewBox="0 0 120 120" class="token-ring__svg">
+        <circle cx="60" cy="60" r="52" class="token-ring__track" />
+        <circle
+          cx="60"
+          cy="60"
+          r="52"
+          class="token-ring__progress"
+          [style.stroke-dashoffset.px]="326.7 - (326.7 * progressPercent()) / 100"
+        />
+      </svg>
+      <div class="token-ring__content">
+        <span class="token-ring__label">Token</span>
+        <span class="token-ring__number" [@numberBump]="e.tokenNumber">{{ e.tokenNumber }}</span>
+      </div>
+    </div>
+
+    <span class="status-badge" [class]="e.status">{{ statusLabel() }}</span>
+
+    @if (isActive()) {
+      <div class="stats-row">
+        <div class="stat">
+          <span class="stat__value" [@numberBump]="e.peopleAhead">{{ e.peopleAhead }}</span>
+          <span class="stat__label">people ahead</span>
+        </div>
+        <div class="stat">
+          <span class="stat__value" [@numberBump]="e.estimatedWaitMinutes ?? 0">
+            {{ e.estimatedWaitMinutes ?? 0 }}
+          </span>
+          <span class="stat__label">est. minutes</span>
+        </div>
+      </div>
+    }
+
+    @if (e.services.length > 0) {
+      <div class="services-summary">
+        {{ e.services.map(s => s.name).join(', ') }}
+      </div>
+    }
+
+    @if (e.status === 'completed') {
+      <p class="tracking__message">Thanks for visiting! See you again soon.</p>
+    } @else if (e.status === 'cancelled') {
+      <p class="tracking__message">You've left the queue.</p>
+    } @else if (e.status === 'no_show') {
+      <p class="tracking__message">You missed your turn. Please rejoin if you're still around.</p>
+    }
+
+    @if (isActive()) {
+      <button
+        type="button"
+        class="btn btn--ghost btn--block"
+        [disabled]="leaving()"
+        (click)="leaveQueue()"
+      >
+        {{ leaving() ? 'Leaving...' : 'Leave Queue' }}
+      </button>
+    }
+  </div>
+}

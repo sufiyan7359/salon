@@ -51,7 +51,13 @@ export class QueueGateway {
   }
 
   @OnEvent('queue.updated')
-  async handleQueueUpdated({ salonId }: { salonId: string }) {
+  async handleQueueUpdated({
+    salonId,
+    entryId,
+  }: {
+    salonId: string;
+    entryId: string;
+  }) {
     try {
       const liveQueue = await this.queueService.getLiveQueue(salonId);
       this.server.to(this.salonRoom(salonId)).emit('queue_updated', liveQueue);
@@ -74,6 +80,19 @@ export class QueueGateway {
             peopleAhead: entry.peopleAhead,
           });
         }
+      }
+
+      // Entries that just left the active set (completed/cancelled/no_show)
+      // won't appear in liveQueue above, so notify their room directly.
+      if (entryId && !liveQueue.some((entry) => entry.id === entryId)) {
+        const finalEntry = await this.queueService.getEntrySnapshot(entryId);
+        this.server.to(this.entryRoom(entryId)).emit('status_changed', {
+          entryId: finalEntry.id,
+          status: finalEntry.status,
+          position: 0,
+          peopleAhead: 0,
+          estimatedWaitMinutes: null,
+        });
       }
     } catch (error) {
       this.logger.error(

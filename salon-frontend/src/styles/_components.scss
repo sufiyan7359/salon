@@ -1,0 +1,85 @@
+@use 'sass:color';
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: $space-1 $space-3;
+  border-radius: $radius-pill;
+  font-size: $fs-xs;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.pill--success {
+  background: rgba(34, 197, 94, 0.12);
+  color: $color-success;
+}
+
+.pill--warning {
+  background: rgba(245, 158, 11, 0.14);
+  color: color.adjust($color-warning, $lightness: -8%);
+}
+
+.pill--danger {
+  background: rgba(239, 68, 68, 0.12);
+  color: $color-danger;
+}
+
+.pill--neutral {
+  background: $color-surface-alt;
+  color: $color-text-muted;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: $space-2;
+  padding: $space-10 $space-5;
+  color: $color-text-muted;
+
+  h2 {
+    color: $color-text;
+    font-size: $fs-xl;
+  }
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  width: 100%;
+
+  label {
+    font-size: $fs-sm;
+    font-weight: 600;
+    color: $color-text-muted;
+  }
+
+  input {
+    @include touch-target;
+    padding: $space-3 $space-4;
+    border-radius: $radius-md;
+    border: 1.5px solid $color-border;
+    font-size: $fs-base;
+    font-family: $font-body;
+    background: $color-surface;
+    color: $color-text;
+    transition: border-color $duration-fast $ease-standard, box-shadow $duration-fast $ease-standard;
+
+    &:focus {
+      outline: none;
+      border-color: $color-primary;
+      box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.12);
+    }
+  }
+
+  .form-field__error {
+    color: $color-danger;
+    font-size: $fs-xs;
+  }
+}

@@ -1,0 +1,49 @@
+@use 'variables' as *;
+
+.customer-shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: $color-bg;
+}
+
+.customer-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  padding: $space-4 $space-5;
+  background: rgba(250, 249, 252, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid $color-border;
+}
+
+.customer-header__brand {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  text-decoration: none;
+  color: $color-text;
+  font-family: $font-display;
+  font-weight: 600;
+  font-size: $fs-lg;
+}
+
+.customer-header__mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-sm;
+  background: $gradient-brand;
+  color: $color-text-inverse;
+  font-weight: 700;
+}
+
+.customer-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}

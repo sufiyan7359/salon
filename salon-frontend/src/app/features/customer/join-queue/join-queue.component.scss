@@ -1,0 +1,168 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  padding: $space-5;
+  max-width: 480px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.join-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.step-indicator {
+  display: flex;
+  justify-content: center;
+  gap: $space-2;
+  margin-bottom: $space-6;
+}
+
+.step-indicator__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: $color-border;
+  transition: background $duration-base $ease-standard, transform $duration-base $ease-standard;
+
+  &.done {
+    background: $color-primary-light;
+  }
+
+  &.active {
+    background: $color-primary;
+    transform: scale(1.4);
+  }
+}
+
+.step-container {
+  position: relative;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+
+  h1 {
+    font-size: $fs-xl;
+  }
+}
+
+.step__subtitle {
+  color: $color-text-muted;
+  font-size: $fs-sm;
+  margin-top: -$space-2;
+}
+
+.step__section-title {
+  font-size: $fs-base;
+  margin-top: $space-2;
+}
+
+.dev-hint {
+  background: $color-surface-alt;
+  border-radius: $radius-sm;
+  padding: $space-2 $space-3;
+  font-size: $fs-sm;
+  color: $color-text-muted;
+}
+
+.service-select-list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.service-select {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  @include card;
+  padding: $space-4;
+  cursor: pointer;
+  transition: border-color $duration-fast $ease-standard, background $duration-fast $ease-standard;
+
+  &.selected {
+    border-color: $color-primary;
+    background: $gradient-brand-soft;
+  }
+
+  input {
+    width: 20px;
+    height: 20px;
+    accent-color: $color-primary;
+  }
+}
+
+.service-select__info {
+  display: flex;
+  flex-direction: column;
+}
+
+.service-select__name {
+  font-weight: 600;
+}
+
+.service-select__meta {
+  font-size: $fs-xs;
+  color: $color-text-muted;
+}
+
+.staff-select-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+}
+
+.staff-chip {
+  @include touch-target;
+  padding: $space-2 $space-4;
+  border-radius: $radius-pill;
+  border: 1.5px solid $color-border;
+  background: $color-surface;
+  font-size: $fs-sm;
+  cursor: pointer;
+  @include press-scale;
+
+  &.selected {
+    border-color: $color-primary;
+    background: $color-primary;
+    color: $color-text-inverse;
+  }
+}
+
+.summary-card {
+  @include card;
+  padding: $space-5;
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.summary-card__row {
+  display: flex;
+  justify-content: space-between;
+  font-size: $fs-sm;
+}
+
+.summary-card__row--total {
+  font-weight: 700;
+  font-size: $fs-base;
+}
+
+.summary-card__divider {
+  height: 1px;
+  background: $color-border;
+  margin: $space-2 0;
+}
+
+.summary-card__staff {
+  font-size: $fs-xs;
+  color: $color-text-muted;
+}
