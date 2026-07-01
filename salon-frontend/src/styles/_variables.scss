@@ -1,0 +1,85 @@
+// Design tokens — single source of truth for the visual language.
+// Avoid hardcoding colors/spacing in components; reference these instead.
+
+// Brand palette — deep purple → coral gradient accent
+$color-primary: #6d28d9;
+$color-primary-light: #8b5cf6;
+$color-primary-dark: #4c1d95;
+$color-accent: #ff6b6b;
+$color-accent-light: #ff9e7d;
+
+$gradient-brand: linear-gradient(135deg, #6d28d9 0%, #ff6b6b 100%);
+$gradient-brand-soft: linear-gradient(135deg, rgba(109, 40, 217, 0.12) 0%, rgba(255, 107, 107, 0.12) 100%);
+
+// Neutrals
+$color-bg: #faf9fc;
+$color-surface: #ffffff;
+$color-surface-alt: #f3f1f8;
+$color-border: #e6e2ef;
+$color-text: #1f1a2e;
+$color-text-muted: #6b6680;
+$color-text-inverse: #ffffff;
+
+// Status
+$color-success: #22c55e;
+$color-warning: #f59e0b;
+$color-danger: #ef4444;
+$color-info: #3b82f6;
+
+// Queue status colors
+$color-status-waiting: #94a3b8;
+$color-status-next: #f59e0b;
+$color-status-in-service: #6d28d9;
+$color-status-completed: #22c55e;
+$color-status-cancelled: #ef4444;
+
+// Typography
+$font-display: 'Clash Display', 'Poppins', sans-serif;
+$font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+$fs-xs: 0.75rem;
+$fs-sm: 0.875rem;
+$fs-base: 1rem;
+$fs-lg: 1.125rem;
+$fs-xl: 1.5rem;
+$fs-2xl: 2rem;
+$fs-3xl: 2.75rem;
+
+// Spacing scale
+$space-1: 0.25rem;
+$space-2: 0.5rem;
+$space-3: 0.75rem;
+$space-4: 1rem;
+$space-5: 1.5rem;
+$space-6: 2rem;
+$space-8: 3rem;
+$space-10: 4rem;
+
+// Radii & shadows
+$radius-sm: 0.5rem;
+$radius-md: 1rem;
+$radius-lg: 1.5rem;
+$radius-pill: 999px;
+
+$shadow-sm: 0 1px 2px rgba(31, 26, 46, 0.06);
+$shadow-md: 0 8px 24px rgba(31, 26, 46, 0.08);
+$shadow-lg: 0 16px 40px rgba(31, 26, 46, 0.12);
+$shadow-glow: 0 0 0 1px rgba(109, 40, 217, 0.08), 0 8px 24px rgba(109, 40, 217, 0.16);
+
+// Breakpoints
+$bp-mobile-max: 575px;
+$bp-tablet-min: 576px;
+$bp-tablet-max: 991px;
+$bp-desktop-min: 992px;
+
+// Motion
+$ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+$ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+$duration-fast: 150ms;
+$duration-base: 250ms;
+$duration-slow: 400ms;
+
+// Layout
+$bottom-nav-height: 64px;
+$sidebar-width: 260px;
+$touch-target-min: 44px;

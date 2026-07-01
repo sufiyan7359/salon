@@ -1,0 +1,75 @@
+@use 'variables' as *;
+
+@mixin mobile-only {
+  @media (max-width: $bp-mobile-max) {
+    @content;
+  }
+}
+
+@mixin tablet-up {
+  @media (min-width: $bp-tablet-min) {
+    @content;
+  }
+}
+
+@mixin desktop-up {
+  @media (min-width: $bp-desktop-min) {
+    @content;
+  }
+}
+
+@mixin card {
+  background: $color-surface;
+  border-radius: $radius-md;
+  box-shadow: $shadow-md;
+  border: 1px solid $color-border;
+}
+
+@mixin glass {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+@mixin touch-target {
+  min-width: $touch-target-min;
+  min-height: $touch-target-min;
+}
+
+@mixin hover-lift {
+  transition: transform $duration-base $ease-standard, box-shadow $duration-base $ease-standard;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-lg;
+  }
+}
+
+@mixin press-scale {
+  transition: transform $duration-fast $ease-standard;
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+@mixin shimmer {
+  background: linear-gradient(
+    90deg,
+    $color-surface-alt 25%,
+    lighten($color-surface-alt, 4%) 37%,
+    $color-surface-alt 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
