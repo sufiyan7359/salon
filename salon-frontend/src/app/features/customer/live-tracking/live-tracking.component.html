@@ -53,6 +53,34 @@
 
     @if (e.status === 'completed') {
       <p class="tracking__message">Thanks for visiting! See you again soon.</p>
+
+      @if (reviewSubmitted()) {
+        <p class="tracking__message">Thanks for your feedback!</p>
+      } @else {
+        <div class="review-card" @fadeIn>
+          <p class="review-card__title">Rate your visit</p>
+          <app-star-rating
+            [rating]="reviewRating()"
+            [interactive]="true"
+            (ratingChange)="reviewRating.set($event)"
+          />
+          <textarea
+            class="review-card__comment"
+            rows="3"
+            placeholder="Leave a comment (optional)"
+            [ngModel]="reviewComment()"
+            (ngModelChange)="reviewComment.set($event)"
+          ></textarea>
+          <button
+            type="button"
+            class="btn btn--primary btn--block"
+            [disabled]="submittingReview()"
+            (click)="submitReview()"
+          >
+            {{ submittingReview() ? 'Submitting...' : 'Submit Review' }}
+          </button>
+        </div>
+      }
     } @else if (e.status === 'cancelled') {
       <p class="tracking__message">You've left the queue.</p>
     } @else if (e.status === 'no_show') {

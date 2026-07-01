@@ -17,6 +17,8 @@ import { ServicesModule } from './modules/services/services.module';
 import { StaffModule } from './modules/staff/staff.module';
 import { QueueModule } from './modules/queue/queue.module';
 import { BookingsModule } from './modules/bookings/bookings.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 
 @Module({
   imports: [
@@ -41,6 +43,8 @@ import { BookingsModule } from './modules/bookings/bookings.module';
     StaffModule,
     QueueModule,
     BookingsModule,
+    ReviewsModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],

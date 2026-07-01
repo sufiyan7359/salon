@@ -1,12 +1,15 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { FormsModule } from '@angular/forms';
 import { QueueEntryWithPosition } from '../../../core/models/queue-entry.model';
 import { QueueService } from '../../../core/services/queue.service';
 import { SocketService } from '../../../core/services/socket.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { ReviewService } from '../../../core/services/review.service';
 import { extractErrorMessage } from '../../../core/utils/http-error.util';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
+import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating.component';
 import { fadeIn, numberBump } from '../../../shared/animations/fade-slide.animation';
 
 interface StatusChangedPayload {
@@ -33,7 +36,7 @@ const STATUS_LABELS: Record<QueueEntryWithPosition['status'], string> = {
 
 @Component({
   selector: 'app-live-tracking',
-  imports: [SkeletonComponent],
+  imports: [SkeletonComponent, StarRatingComponent, FormsModule],
   templateUrl: './live-tracking.component.html',
   styleUrl: './live-tracking.component.scss',
   animations: [fadeIn, numberBump],
@@ -44,11 +47,17 @@ export class LiveTrackingComponent implements OnInit, OnDestroy {
   private readonly queueService = inject(QueueService);
   private readonly socketService = inject(SocketService);
   private readonly toast = inject(ToastService);
+  private readonly reviewService = inject(ReviewService);
 
   readonly loading = signal(true);
   readonly entry = signal<QueueEntryWithPosition | null>(null);
   readonly leaving = signal(false);
   readonly notFound = signal(false);
+
+  readonly reviewSubmitted = signal(false);
+  readonly reviewRating = signal(0);
+  readonly reviewComment = signal('');
+  readonly submittingReview = signal(false);
 
   readonly statusLabel = computed(
     () => STATUS_LABELS[this.entry()?.status ?? 'waiting'],
@@ -109,6 +118,31 @@ export class LiveTrackingComponent implements OnInit, OnDestroy {
       this.toast.error(extractErrorMessage(error));
     } finally {
       this.leaving.set(false);
+    }
+  }
+
+  async submitReview(): Promise<void> {
+    const current = this.entry();
+    if (!current) return;
+
+    if (this.reviewRating() === 0) {
+      this.toast.error('Select a star rating first');
+      return;
+    }
+
+    this.submittingReview.set(true);
+    try {
+      await this.reviewService.create({
+        salonId: current.salonId,
+        rating: this.reviewRating(),
+        comment: this.reviewComment().trim() || undefined,
+      });
+      this.reviewSubmitted.set(true);
+      this.toast.success('Thanks for your feedback!');
+    } catch (error) {
+      this.toast.error(extractErrorMessage(error));
+    } finally {
+      this.submittingReview.set(false);
     }
   }
 

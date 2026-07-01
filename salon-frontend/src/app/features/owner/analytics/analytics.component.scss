@@ -1,0 +1,144 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.section-label {
+  font-size: $fs-sm;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $color-text-muted;
+  margin: $space-6 0 $space-3;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $space-3;
+
+  @include tablet-up {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.stat-card {
+  @include card;
+  padding: $space-4;
+  display: flex;
+  flex-direction: column;
+  gap: $space-1;
+}
+
+.stat-card__label {
+  font-size: $fs-xs;
+  color: $color-text-muted;
+}
+
+.stat-card__value {
+  font-family: $font-display;
+  font-size: $fs-2xl;
+  font-weight: 700;
+  color: $color-primary;
+
+  small {
+    font-size: $fs-sm;
+    font-weight: 500;
+    color: $color-text-muted;
+    margin-left: $space-1;
+  }
+}
+
+.chart-card {
+  @include card;
+  padding: $space-5;
+}
+
+.peak-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 140px;
+}
+
+.peak-chart__bar-wrap {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  position: relative;
+}
+
+.peak-chart__bar {
+  width: 100%;
+  min-height: 2px;
+  background: $gradient-brand;
+  border-radius: 2px 2px 0 0;
+  transition: height 400ms $ease-standard;
+}
+
+.peak-chart__label {
+  position: absolute;
+  bottom: -$space-5;
+  font-size: 10px;
+  color: $color-text-muted;
+}
+
+.ratings-card {
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+
+  @include tablet-up {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.ratings-card__summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $space-1;
+  min-width: 120px;
+}
+
+.ratings-card__average {
+  font-family: $font-display;
+  font-size: $fs-3xl;
+  font-weight: 700;
+}
+
+.ratings-card__count {
+  font-size: $fs-xs;
+  color: $color-text-muted;
+}
+
+.ratings-breakdown {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  width: 100%;
+}
+
+.ratings-breakdown__row {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  font-size: $fs-sm;
+  color: $color-text-muted;
+}
+
+.ratings-breakdown__track {
+  flex: 1;
+  height: 8px;
+  border-radius: $radius-pill;
+  background: $color-surface-alt;
+  overflow: hidden;
+}
+
+.ratings-breakdown__fill {
+  height: 100%;
+  background: $color-warning;
+  transition: width 400ms $ease-standard;
+}

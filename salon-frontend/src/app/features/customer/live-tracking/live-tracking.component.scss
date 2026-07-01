@@ -152,3 +152,32 @@
   font-size: $fs-base;
   color: $color-text-muted;
 }
+
+.review-card {
+  @include card;
+  width: 100%;
+  padding: $space-5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $space-3;
+}
+
+.review-card__title {
+  font-weight: 600;
+}
+
+.review-card__comment {
+  width: 100%;
+  padding: $space-3 $space-4;
+  border-radius: $radius-md;
+  border: 1.5px solid $color-border;
+  font-family: $font-body;
+  font-size: $fs-sm;
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: $color-primary;
+  }
+}

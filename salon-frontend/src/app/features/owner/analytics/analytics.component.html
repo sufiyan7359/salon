@@ -1,0 +1,81 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Analytics</h1>
+  </div>
+
+  @if (loading()) {
+    <div class="list-skeleton">
+      <app-skeleton height="100px" radius="1rem" />
+      <app-skeleton height="220px" radius="1rem" />
+    </div>
+  } @else if (summary(); as s) {
+    <div class="stat-grid" @fadeIn>
+      <div class="stat-card">
+        <span class="stat-card__label">Served Today</span>
+        <span class="stat-card__value">{{ s.servedCounts.today }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card__label">Served This Week</span>
+        <span class="stat-card__value">{{ s.servedCounts.week }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card__label">Served This Month</span>
+        <span class="stat-card__value">{{ s.servedCounts.month }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card__label">Avg Wait Time</span>
+        <span class="stat-card__value">{{ s.avgWaitMinutes }}<small>min</small></span>
+      </div>
+    </div>
+
+    <h2 class="section-label">Revenue Estimate</h2>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <span class="stat-card__label">Today</span>
+        <span class="stat-card__value">₹{{ s.revenue.today }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card__label">This Week</span>
+        <span class="stat-card__value">₹{{ s.revenue.week }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-card__label">This Month</span>
+        <span class="stat-card__value">₹{{ s.revenue.month }}</span>
+      </div>
+    </div>
+
+    <h2 class="section-label">Peak Hours (last 90 days)</h2>
+    <div class="chart-card">
+      <div class="peak-chart">
+        @for (h of s.peakHours; track h.hour) {
+          <div class="peak-chart__bar-wrap">
+            <div class="peak-chart__bar" [style.height.%]="(h.count / maxPeakCount()) * 100"></div>
+            @if (h.hour % 3 === 0) {
+              <span class="peak-chart__label">{{ h.hour }}</span>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <h2 class="section-label">Customer Ratings</h2>
+    <div class="chart-card ratings-card">
+      <div class="ratings-card__summary">
+        <span class="ratings-card__average">{{ s.ratings.average }}</span>
+        <app-star-rating [rating]="s.ratings.average" />
+        <span class="ratings-card__count">{{ s.ratings.count }} review{{ s.ratings.count === 1 ? '' : 's' }}</span>
+      </div>
+      <div class="ratings-breakdown">
+        @for (entry of ratingBreakdownEntries(); track entry.star) {
+          <div class="ratings-breakdown__row">
+            <span>{{ entry.star }}★</span>
+            <div class="ratings-breakdown__track">
+              <div class="ratings-breakdown__fill" [style.width.%]="(entry.count / maxRatingCount()) * 100"></div>
+            </div>
+            <span>{{ entry.count }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

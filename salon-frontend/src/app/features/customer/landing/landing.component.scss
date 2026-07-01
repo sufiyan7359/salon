@@ -54,6 +54,14 @@
   font-size: $fs-sm;
 }
 
+.hero__rating {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  font-size: $fs-sm;
+  color: $color-text-muted;
+}
+
 .hero__description {
   margin-top: $space-2;
   font-size: $fs-base;
@@ -148,6 +156,33 @@
   font-size: $fs-xs;
   color: $color-text-muted;
   text-align: center;
+}
+
+.review-list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.review-item {
+  @include card;
+  padding: $space-4;
+}
+
+.review-item__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $space-2;
+}
+
+.review-item__name {
+  font-weight: 600;
+}
+
+.review-item__comment {
+  font-size: $fs-sm;
+  color: $color-text-muted;
 }
 
 .cta-bar {

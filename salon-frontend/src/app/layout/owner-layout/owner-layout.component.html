@@ -84,20 +84,28 @@
         <a routerLink="/owner/services" routerLinkActive="active">Services</a>
         <a routerLink="/owner/staff" routerLinkActive="active">Staff</a>
         <a routerLink="/owner/bookings" routerLinkActive="active">Bookings</a>
+        <a routerLink="/owner/analytics" routerLinkActive="active">Analytics</a>
       </nav>
       <button type="button" class="owner-sidebar__logout" (click)="logout()">Log out</button>
     </aside>
 
-    <main class="owner-main">
-      <router-outlet />
-    </main>
+    <div class="owner-content">
+      <header class="owner-mobile-header">
+        <span>{{ salonService.salon()?.name }}</span>
+        <button type="button" (click)="logout()">Log out</button>
+      </header>
+
+      <main class="owner-main">
+        <router-outlet />
+      </main>
+    </div>
 
     <nav class="owner-bottom-nav">
       <a routerLink="/owner" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Queue</a>
       <a routerLink="/owner/services" routerLinkActive="active">Services</a>
       <a routerLink="/owner/staff" routerLinkActive="active">Staff</a>
       <a routerLink="/owner/bookings" routerLinkActive="active">Bookings</a>
-      <button type="button" (click)="logout()">Log out</button>
+      <a routerLink="/owner/analytics" routerLinkActive="active">Analytics</a>
     </nav>
   </div>
 }

@@ -78,6 +78,13 @@ export const routes: Routes = [
             './features/owner/bookings-manager/bookings-manager.component'
           ).then((m) => m.BookingsManagerComponent),
       },
+      {
+        path: 'analytics',
+        loadComponent: () =>
+          import('./features/owner/analytics/analytics.component').then(
+            (m) => m.AnalyticsComponent,
+          ),
+      },
     ],
   },
 ];

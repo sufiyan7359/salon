@@ -135,6 +135,36 @@ form {
   }
 }
 
+.owner-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.owner-mobile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $space-4 $space-5;
+  background: $color-surface;
+  border-bottom: 1px solid $color-border;
+  font-weight: 600;
+
+  button {
+    background: none;
+    border: none;
+    color: $color-text-muted;
+    font-size: $fs-sm;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  @include desktop-up {
+    display: none;
+  }
+}
+
 .owner-main {
   flex: 1;
   min-width: 0;

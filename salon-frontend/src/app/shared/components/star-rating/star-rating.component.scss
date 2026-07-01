@@ -1,0 +1,33 @@
+@use 'variables' as *;
+
+.star-rating {
+  display: inline-flex;
+  gap: $space-1;
+}
+
+.star {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: $fs-xl;
+  line-height: 1;
+  color: $color-border;
+  cursor: default;
+  transition: color $duration-fast $ease-standard, transform $duration-fast $ease-standard;
+
+  &.filled {
+    color: $color-warning;
+  }
+}
+
+.interactive .star {
+  cursor: pointer;
+
+  &:hover {
+    transform: scale(1.15);
+  }
+}
+
+.star-rating--sm .star {
+  font-size: $fs-base;
+}
