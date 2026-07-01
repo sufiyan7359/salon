@@ -1,0 +1,164 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Live Queue</h1>
+    <button type="button" class="btn btn--primary btn--sm" (click)="showWalkIn.set(!showWalkIn())">
+      {{ showWalkIn() ? 'Cancel' : '+ Add Walk-in' }}
+    </button>
+  </div>
+
+  @if (showWalkIn()) {
+    <div class="entity-form" @fadeIn>
+      <div class="form-field">
+        <label for="wName">Customer name</label>
+        <input
+          id="wName"
+          type="text"
+          [ngModel]="walkInName()"
+          (ngModelChange)="walkInName.set($event)"
+        />
+      </div>
+      <div class="form-field">
+        <label for="wPhone">Phone number</label>
+        <input
+          id="wPhone"
+          type="tel"
+          placeholder="+91 98765 43210"
+          [ngModel]="walkInPhone()"
+          (ngModelChange)="walkInPhone.set($event)"
+        />
+      </div>
+      <div class="form-field">
+        <label>Services</label>
+        <div class="walkin-form__chips">
+          @for (service of services(); track service.id) {
+            <button
+              type="button"
+              class="staff-chip"
+              [class.selected]="walkInServiceIds().has(service.id)"
+              (click)="toggleWalkInService(service.id)"
+            >
+              {{ service.name }}
+            </button>
+          }
+        </div>
+      </div>
+      @if (staff().length > 0) {
+        <div class="form-field">
+          <label>Preferred staff</label>
+          <div class="walkin-form__chips">
+            <button
+              type="button"
+              class="staff-chip"
+              [class.selected]="walkInStaffId() === undefined"
+              (click)="walkInStaffId.set(undefined)"
+            >
+              No preference
+            </button>
+            @for (member of staff(); track member.id) {
+              <button
+                type="button"
+                class="staff-chip"
+                [class.selected]="walkInStaffId() === member.id"
+                (click)="walkInStaffId.set(member.id)"
+              >
+                {{ member.name }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+      <button
+        type="button"
+        class="btn btn--primary btn--block"
+        [disabled]="submittingWalkIn()"
+        (click)="submitWalkIn()"
+      >
+        {{ submittingWalkIn() ? 'Adding...' : 'Add to Queue' }}
+      </button>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="list-skeleton">
+      <app-skeleton height="88px" radius="1rem" />
+      <app-skeleton height="88px" radius="1rem" />
+    </div>
+  } @else {
+    @if (inServiceEntries().length > 0) {
+      <h2 class="section-label">In Service</h2>
+      <div class="entity-list">
+        @for (entry of inServiceEntries(); track entry.id) {
+          <div class="queue-card in_service" @fadeIn>
+            <div class="queue-card__token">{{ entry.tokenNumber }}</div>
+            <div class="queue-card__info">
+              <span class="queue-card__name">{{ entry.customer?.name || entry.customer?.phoneNumber }}</span>
+              <span class="queue-card__services">{{ entry.services.map(s => s.name).join(', ') }}</span>
+              @if (entry.staff) {
+                <span class="queue-card__staff">With {{ entry.staff.name }}</span>
+              }
+            </div>
+            <div class="queue-card__actions">
+              <button
+                type="button"
+                class="btn btn--primary btn--sm"
+                [disabled]="actioningId() === entry.id"
+                (click)="complete(entry)"
+              >
+                Complete
+              </button>
+              <button
+                type="button"
+                class="btn btn--ghost btn--sm"
+                [disabled]="actioningId() === entry.id"
+                (click)="noShow(entry)"
+              >
+                No-show
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <h2 class="section-label">Waiting ({{ waitingEntries().length }})</h2>
+    @if (waitingEntries().length === 0) {
+      <div class="empty-state">
+        <h2>No one's waiting</h2>
+        <p>New customers who join the queue will show up here in real time.</p>
+      </div>
+    } @else {
+      <div class="entity-list">
+        @for (entry of waitingEntries(); track entry.id) {
+          <div class="queue-card" @fadeIn>
+            <div class="queue-card__token">{{ entry.tokenNumber }}</div>
+            <div class="queue-card__info">
+              <span class="queue-card__name">{{ entry.customer?.name || entry.customer?.phoneNumber }}</span>
+              <span class="queue-card__services">{{ entry.services.map(s => s.name).join(', ') }}</span>
+              @if (entry.staff) {
+                <span class="queue-card__staff">Prefers {{ entry.staff.name }}</span>
+              }
+            </div>
+            <div class="queue-card__actions">
+              <button
+                type="button"
+                class="btn btn--primary btn--sm"
+                [disabled]="actioningId() === entry.id"
+                (click)="callNext(entry)"
+              >
+                Call Next
+              </button>
+              <button
+                type="button"
+                class="btn btn--ghost btn--sm"
+                [disabled]="actioningId() === entry.id"
+                (click)="remove(entry)"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

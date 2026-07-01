@@ -10,6 +10,13 @@ export interface JoinQueuePayload {
   staffId?: string;
 }
 
+export interface WalkInPayload {
+  serviceIds: string[];
+  staffId?: string;
+  customerName: string;
+  customerPhone: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class QueueService {
   constructor(private readonly http: HttpClient) {}
@@ -39,6 +46,42 @@ export class QueueService {
   leave(entryId: string) {
     return firstValueFrom(
       this.http.delete<QueueEntry>(`${environment.apiUrl}/queue/${entryId}/leave`),
+    );
+  }
+
+  walkIn(salonId: string, payload: WalkInPayload) {
+    return firstValueFrom(
+      this.http.post<QueueEntry>(
+        `${environment.apiUrl}/queue/${salonId}/walk-in`,
+        payload,
+      ),
+    );
+  }
+
+  callNext(entryId: string, staffId?: string) {
+    return firstValueFrom(
+      this.http.patch<QueueEntry>(
+        `${environment.apiUrl}/queue/${entryId}/call-next`,
+        staffId ? { staffId } : {},
+      ),
+    );
+  }
+
+  complete(entryId: string) {
+    return firstValueFrom(
+      this.http.patch<QueueEntry>(
+        `${environment.apiUrl}/queue/${entryId}/complete`,
+        {},
+      ),
+    );
+  }
+
+  noShow(entryId: string) {
+    return firstValueFrom(
+      this.http.patch<QueueEntry>(
+        `${environment.apiUrl}/queue/${entryId}/no-show`,
+        {},
+      ),
     );
   }
 }

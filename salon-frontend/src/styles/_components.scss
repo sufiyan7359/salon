@@ -83,3 +83,82 @@
     font-size: $fs-xs;
   }
 }
+
+// Shared admin-page layout (owner dashboard: queue/services/staff managers)
+.page {
+  padding: $space-5;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $space-5;
+
+  h1 {
+    font-size: $fs-xl;
+  }
+}
+
+.entity-form {
+  @include card;
+  padding: $space-5;
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+  margin-bottom: $space-5;
+}
+
+.entity-form__row {
+  display: flex;
+  gap: $space-4;
+
+  .form-field {
+    flex: 1;
+  }
+}
+
+.entity-list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.entity-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-3;
+  @include card;
+  padding: $space-4;
+  flex-wrap: wrap;
+}
+
+.entity-card__info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.entity-card__name {
+  font-weight: 600;
+}
+
+.entity-card__meta {
+  font-size: $fs-xs;
+  color: $color-text-muted;
+}
+
+.entity-card__actions {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+}
+
+.list-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}

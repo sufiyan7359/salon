@@ -1,0 +1,68 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+:host {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: $space-5;
+  background: $gradient-brand-soft;
+}
+
+.login-card {
+  @include card;
+  width: 100%;
+  max-width: 400px;
+  padding: $space-8 $space-6;
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.login-card__brand {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  font-family: $font-display;
+  font-weight: 600;
+  margin-bottom: $space-2;
+}
+
+.login-card__mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-sm;
+  background: $gradient-brand;
+  color: $color-text-inverse;
+  font-weight: 700;
+}
+
+h1 {
+  font-size: $fs-xl;
+}
+
+.login-card__subtitle {
+  color: $color-text-muted;
+  font-size: $fs-sm;
+  margin-top: -$space-2;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+  margin-top: $space-2;
+}
+
+.login-card__toggle {
+  background: none;
+  border: none;
+  color: $color-primary;
+  font-size: $fs-sm;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+}

@@ -1,0 +1,101 @@
+@if (loading()) {
+  <div class="owner-loading">Loading your dashboard...</div>
+} @else if (!salonService.salon()) {
+  <div class="setup-screen">
+    <div class="setup-card">
+      <h1>Set up your salon</h1>
+      <p class="setup-card__subtitle">
+        One-time setup &mdash; this becomes the salon your customers see and join the queue for.
+      </p>
+
+      <form (ngSubmit)="submitSetup()">
+        <div class="form-field">
+          <label for="setupName">Salon name</label>
+          <input
+            id="setupName"
+            type="text"
+            [ngModel]="setupName()"
+            (ngModelChange)="setupName.set($event)"
+            name="setupName"
+            required
+          />
+        </div>
+        <div class="form-field">
+          <label for="setupAddress">Address</label>
+          <input
+            id="setupAddress"
+            type="text"
+            [ngModel]="setupAddress()"
+            (ngModelChange)="setupAddress.set($event)"
+            name="setupAddress"
+            required
+          />
+        </div>
+        <div class="form-field">
+          <label for="setupCity">City</label>
+          <input
+            id="setupCity"
+            type="text"
+            [ngModel]="setupCity()"
+            (ngModelChange)="setupCity.set($event)"
+            name="setupCity"
+          />
+        </div>
+        <div class="setup-card__row">
+          <div class="form-field">
+            <label for="setupOpening">Opens</label>
+            <input
+              id="setupOpening"
+              type="time"
+              [ngModel]="setupOpeningTime()"
+              (ngModelChange)="setupOpeningTime.set($event)"
+              name="setupOpening"
+            />
+          </div>
+          <div class="form-field">
+            <label for="setupClosing">Closes</label>
+            <input
+              id="setupClosing"
+              type="time"
+              [ngModel]="setupClosingTime()"
+              (ngModelChange)="setupClosingTime.set($event)"
+              name="setupClosing"
+            />
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn--primary btn--block" [disabled]="savingSetup()">
+          {{ savingSetup() ? 'Setting up...' : 'Create Salon' }}
+        </button>
+      </form>
+    </div>
+  </div>
+} @else {
+  <div class="owner-shell">
+    <aside class="owner-sidebar">
+      <div class="owner-sidebar__brand">
+        <span class="owner-sidebar__mark">G</span>
+        <span>{{ salonService.salon()?.name }}</span>
+      </div>
+      <nav class="owner-sidebar__nav">
+        <a routerLink="/owner" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          Live Queue
+        </a>
+        <a routerLink="/owner/services" routerLinkActive="active">Services</a>
+        <a routerLink="/owner/staff" routerLinkActive="active">Staff</a>
+      </nav>
+      <button type="button" class="owner-sidebar__logout" (click)="logout()">Log out</button>
+    </aside>
+
+    <main class="owner-main">
+      <router-outlet />
+    </main>
+
+    <nav class="owner-bottom-nav">
+      <a routerLink="/owner" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Queue</a>
+      <a routerLink="/owner/services" routerLinkActive="active">Services</a>
+      <a routerLink="/owner/staff" routerLinkActive="active">Staff</a>
+      <button type="button" (click)="logout()">Log out</button>
+    </nav>
+  </div>
+}

@@ -19,6 +19,7 @@ export class AuthService {
   readonly isCustomer = computed(
     () => this.currentUserSignal()?.role === 'customer',
   );
+  readonly isOwner = computed(() => this.currentUserSignal()?.role === 'owner');
 
   constructor(private readonly http: HttpClient) {}
 
@@ -41,6 +42,33 @@ export class AuthService {
         phoneNumber,
         otpCode,
         name,
+      }),
+    );
+    this.persistSession(response);
+    return response.user;
+  }
+
+  async ownerLogin(email: string, password: string): Promise<PublicUser> {
+    const response = await firstValueFrom(
+      this.http.post<AuthResponse>(`${environment.apiUrl}/auth/owner/login`, {
+        email,
+        password,
+      }),
+    );
+    this.persistSession(response);
+    return response.user;
+  }
+
+  async ownerRegister(
+    name: string,
+    email: string,
+    password: string,
+  ): Promise<PublicUser> {
+    const response = await firstValueFrom(
+      this.http.post<AuthResponse>(`${environment.apiUrl}/auth/owner/register`, {
+        name,
+        email,
+        password,
       }),
     );
     this.persistSession(response);

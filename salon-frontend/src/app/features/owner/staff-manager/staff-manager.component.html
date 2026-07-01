@@ -1,0 +1,67 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Staff</h1>
+    <button type="button" class="btn btn--primary btn--sm" (click)="showForm() ? cancelForm() : openCreate()">
+      {{ showForm() ? 'Cancel' : '+ Add Staff' }}
+    </button>
+  </div>
+
+  @if (showForm()) {
+    <div class="entity-form" @fadeIn>
+      <div class="form-field">
+        <label for="stName">Name</label>
+        <input
+          id="stName"
+          type="text"
+          [ngModel]="formName()"
+          (ngModelChange)="formName.set($event)"
+        />
+      </div>
+      <div class="form-field">
+        <label for="stSpec">Specialization (optional)</label>
+        <input
+          id="stSpec"
+          type="text"
+          placeholder="Haircuts, coloring..."
+          [ngModel]="formSpecialization()"
+          (ngModelChange)="formSpecialization.set($event)"
+        />
+      </div>
+      <button type="button" class="btn btn--primary btn--block" [disabled]="saving()" (click)="submitForm()">
+        {{ saving() ? 'Saving...' : editingId() ? 'Save Changes' : 'Add Staff' }}
+      </button>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="list-skeleton">
+      <app-skeleton height="72px" radius="1rem" />
+      <app-skeleton height="72px" radius="1rem" />
+    </div>
+  } @else if (staff().length === 0) {
+    <div class="empty-state">
+      <h2>No staff added yet</h2>
+      <p>Add your team so customers can choose a preferred stylist when joining the queue.</p>
+    </div>
+  } @else {
+    <div class="entity-list">
+      @for (member of staff(); track member.id) {
+        <div class="entity-card">
+          <div class="entity-card__info">
+            <span class="entity-card__name">{{ member.name }}</span>
+            @if (member.specialization) {
+              <span class="entity-card__meta">{{ member.specialization }}</span>
+            }
+          </div>
+          <div class="entity-card__actions">
+            <button type="button" class="pill" [class]="member.isAvailable ? 'pill--success' : 'pill--neutral'" (click)="toggleAvailable(member)">
+              {{ member.isAvailable ? 'Available' : 'Unavailable' }}
+            </button>
+            <button type="button" class="btn btn--ghost btn--sm" (click)="openEdit(member)">Edit</button>
+            <button type="button" class="btn btn--ghost btn--sm" (click)="remove(member)">Delete</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

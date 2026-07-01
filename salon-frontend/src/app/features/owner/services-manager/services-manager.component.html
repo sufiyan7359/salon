@@ -1,0 +1,90 @@
+<div class="page">
+  <div class="page__header">
+    <h1>Services</h1>
+    <button type="button" class="btn btn--primary btn--sm" (click)="showForm() ? cancelForm() : openCreate()">
+      {{ showForm() ? 'Cancel' : '+ Add Service' }}
+    </button>
+  </div>
+
+  @if (showForm()) {
+    <div class="entity-form" @fadeIn>
+      <div class="form-field">
+        <label for="sName">Name</label>
+        <input
+          id="sName"
+          type="text"
+          [ngModel]="formName()"
+          (ngModelChange)="formName.set($event)"
+        />
+      </div>
+      <div class="entity-form__row">
+        <div class="form-field">
+          <label for="sPrice">Price (₹)</label>
+          <input
+            id="sPrice"
+            type="number"
+            min="0"
+            [ngModel]="formPrice()"
+            (ngModelChange)="formPrice.set($event)"
+          />
+        </div>
+        <div class="form-field">
+          <label for="sDuration">Duration (min)</label>
+          <input
+            id="sDuration"
+            type="number"
+            min="1"
+            [ngModel]="formDuration()"
+            (ngModelChange)="formDuration.set($event)"
+          />
+        </div>
+      </div>
+      <div class="form-field">
+        <label for="sCategory">Category (optional)</label>
+        <input
+          id="sCategory"
+          type="text"
+          placeholder="hair, beard, spa..."
+          [ngModel]="formCategory()"
+          (ngModelChange)="formCategory.set($event)"
+        />
+      </div>
+      <button type="button" class="btn btn--primary btn--block" [disabled]="saving()" (click)="submitForm()">
+        {{ saving() ? 'Saving...' : editingId() ? 'Save Changes' : 'Add Service' }}
+      </button>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="list-skeleton">
+      <app-skeleton height="72px" radius="1rem" />
+      <app-skeleton height="72px" radius="1rem" />
+    </div>
+  } @else if (services().length === 0) {
+    <div class="empty-state">
+      <h2>No services yet</h2>
+      <p>Add your first service so customers can select it when they join the queue.</p>
+    </div>
+  } @else {
+    <div class="entity-list">
+      @for (service of services(); track service.id) {
+        <div class="entity-card">
+          <div class="entity-card__info">
+            <span class="entity-card__name">{{ service.name }}</span>
+            <span class="entity-card__meta">
+              {{ service.durationMinutes }} min &middot; ₹{{ service.price }}
+              @if (service.category) { &middot; {{ service.category }} }
+            </span>
+          </div>
+          <div class="entity-card__actions">
+            <button type="button" class="pill" [class]="service.isActive ? 'pill--success' : 'pill--neutral'" (click)="toggleActive(service)">
+              {{ service.isActive ? 'Active' : 'Inactive' }}
+            </button>
+            <button type="button" class="btn btn--ghost btn--sm" (click)="openEdit(service)">Edit</button>
+            <button type="button" class="btn btn--ghost btn--sm" (click)="remove(service)">Delete</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

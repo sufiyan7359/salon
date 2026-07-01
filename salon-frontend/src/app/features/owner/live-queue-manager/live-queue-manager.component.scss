@@ -1,0 +1,85 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.section-label {
+  font-size: $fs-sm;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $color-text-muted;
+  margin: $space-5 0 $space-3;
+}
+
+.queue-card {
+  display: flex;
+  align-items: center;
+  gap: $space-4;
+  @include card;
+  padding: $space-4;
+
+  &.in_service {
+    border-color: $color-primary-light;
+    background: $gradient-brand-soft;
+  }
+}
+
+.queue-card__token {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: $color-surface-alt;
+  font-weight: 700;
+  font-family: $font-display;
+  flex-shrink: 0;
+}
+
+.queue-card__info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.queue-card__name {
+  font-weight: 600;
+}
+
+.queue-card__services,
+.queue-card__staff {
+  font-size: $fs-xs;
+  color: $color-text-muted;
+}
+
+.queue-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+
+  @include tablet-up {
+    flex-direction: row;
+  }
+}
+
+.walkin-form__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+}
+
+.staff-chip {
+  @include touch-target;
+  padding: $space-2 $space-4;
+  border-radius: $radius-pill;
+  border: 1.5px solid $color-border;
+  background: $color-surface;
+  font-size: $fs-sm;
+  cursor: pointer;
+  @include press-scale;
+
+  &.selected {
+    border-color: $color-primary;
+    background: $color-primary;
+    color: $color-text-inverse;
+  }
+}

@@ -1,0 +1,184 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.owner-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  color: $color-text-muted;
+}
+
+.setup-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: $space-5;
+  background: $gradient-brand-soft;
+}
+
+.setup-card {
+  @include card;
+  width: 100%;
+  max-width: 480px;
+  padding: $space-8 $space-6;
+
+  h1 {
+    font-size: $fs-xl;
+  }
+}
+
+.setup-card__subtitle {
+  color: $color-text-muted;
+  font-size: $fs-sm;
+  margin: $space-2 0 $space-5;
+}
+
+.setup-card__row {
+  display: flex;
+  gap: $space-4;
+
+  .form-field {
+    flex: 1;
+  }
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.owner-shell {
+  display: flex;
+  min-height: 100dvh;
+  background: $color-bg;
+}
+
+.owner-sidebar {
+  display: none;
+
+  @include desktop-up {
+    display: flex;
+    flex-direction: column;
+    width: $sidebar-width;
+    flex-shrink: 0;
+    padding: $space-5;
+    border-right: 1px solid $color-border;
+    background: $color-surface;
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+  }
+}
+
+.owner-sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  font-family: $font-display;
+  font-weight: 600;
+  margin-bottom: $space-8;
+}
+
+.owner-sidebar__mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-sm;
+  background: $gradient-brand;
+  color: $color-text-inverse;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.owner-sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  flex: 1;
+
+  a {
+    padding: $space-3 $space-4;
+    border-radius: $radius-sm;
+    text-decoration: none;
+    color: $color-text-muted;
+    font-weight: 600;
+    transition: background $duration-fast $ease-standard, color $duration-fast $ease-standard;
+
+    &:hover {
+      background: $color-surface-alt;
+    }
+
+    &.active {
+      background: $gradient-brand-soft;
+      color: $color-primary;
+    }
+  }
+}
+
+.owner-sidebar__logout {
+  background: none;
+  border: none;
+  text-align: left;
+  padding: $space-3 $space-4;
+  color: $color-text-muted;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: $radius-sm;
+
+  &:hover {
+    background: $color-surface-alt;
+    color: $color-danger;
+  }
+}
+
+.owner-main {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: calc($bottom-nav-height + $space-5 + env(safe-area-inset-bottom, 0px));
+
+  @include desktop-up {
+    padding-bottom: 0;
+  }
+}
+
+.owner-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  height: calc($bottom-nav-height + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: $color-surface;
+  border-top: 1px solid $color-border;
+  z-index: 30;
+
+  a,
+  button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-decoration: none;
+    color: $color-text-muted;
+    font-size: $fs-xs;
+    font-weight: 600;
+    background: none;
+    border: none;
+    cursor: pointer;
+
+    &.active {
+      color: $color-primary;
+    }
+  }
+
+  @include desktop-up {
+    display: none;
+  }
+}
