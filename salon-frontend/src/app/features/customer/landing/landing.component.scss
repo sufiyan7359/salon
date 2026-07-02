@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use 'variables' as *;
 @use 'mixins' as *;
 
@@ -41,6 +42,26 @@
   position: absolute;
   top: $space-4;
   right: $space-4;
+
+  // Semantic pill colors (translucent amber/green) are tuned for a plain
+  // light surface - on top of the hero gradient/photo they lose contrast
+  // and become hard to read. Give the badge its own opaque glass backing
+  // so it stays legible regardless of what's behind it, and bump the pill
+  // up to a solid, higher-contrast treatment inside that context.
+  .pill {
+    @include glass;
+    box-shadow: $shadow-sm;
+
+    &.pill--success {
+      background: rgba(255, 255, 255, 0.85);
+      color: color.adjust($color-success, $lightness: -12%);
+    }
+
+    &.pill--warning {
+      background: rgba(255, 255, 255, 0.85);
+      color: color.adjust($color-warning, $lightness: -15%);
+    }
+  }
 }
 
 .hero__body {
