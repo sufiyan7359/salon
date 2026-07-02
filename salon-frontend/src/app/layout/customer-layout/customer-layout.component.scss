@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use 'variables' as *;
 
 .customer-shell {
@@ -14,7 +15,7 @@
   display: flex;
   align-items: center;
   padding: $space-4 $space-5;
-  background: rgba(250, 249, 252, 0.85);
+  background: rgba($color-bg, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid $color-border;

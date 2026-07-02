@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use 'variables' as *;
 @use 'mixins' as *;
 
@@ -16,7 +17,7 @@
   cursor: pointer;
   text-decoration: none;
   @include press-scale;
-  transition: transform $duration-fast $ease-standard, box-shadow $duration-base $ease-standard, opacity $duration-base $ease-standard;
+  transition: transform $duration-fast $ease-standard, box-shadow $duration-base $ease-standard, opacity $duration-base $ease-standard, background $duration-base $ease-standard, border-color $duration-base $ease-standard;
 
   &:disabled {
     opacity: 0.5;
@@ -26,25 +27,42 @@
 }
 
 .btn--primary {
-  background: $gradient-brand;
+  background: $color-primary;
   color: $color-text-inverse;
   box-shadow: $shadow-glow;
+
+  &:hover:not(:disabled) {
+    background: $color-primary-light;
+  }
 }
 
 .btn--secondary {
   background: $color-surface-alt;
   color: $color-text;
+
+  &:hover:not(:disabled) {
+    background: $color-border;
+  }
 }
 
 .btn--ghost {
   background: transparent;
   color: $color-primary;
   border: 1px solid $color-border;
+
+  &:hover:not(:disabled) {
+    background: $color-surface-alt;
+    border-color: $color-primary;
+  }
 }
 
 .btn--danger {
   background: $color-danger;
   color: $color-text-inverse;
+
+  &:hover:not(:disabled) {
+    background: color.adjust($color-danger, $lightness: -6%);
+  }
 }
 
 .btn--block {

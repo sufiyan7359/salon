@@ -99,7 +99,7 @@
 
   &.waiting,
   &.next {
-    background: rgba(245, 158, 11, 0.14);
+    background: rgba($color-warning, 0.14);
     color: color.adjust($color-warning, $lightness: -8%);
   }
 
@@ -109,13 +109,13 @@
   }
 
   &.completed {
-    background: rgba(34, 197, 94, 0.12);
+    background: rgba($color-success, 0.12);
     color: $color-success;
   }
 
   &.cancelled,
   &.no_show {
-    background: rgba(239, 68, 68, 0.12);
+    background: rgba($color-danger, 0.1);
     color: $color-danger;
   }
 }

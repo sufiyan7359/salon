@@ -13,17 +13,17 @@
 }
 
 .pill--success {
-  background: rgba(34, 197, 94, 0.12);
+  background: rgba($color-success, 0.12);
   color: $color-success;
 }
 
 .pill--warning {
-  background: rgba(245, 158, 11, 0.14);
+  background: rgba($color-warning, 0.14);
   color: color.adjust($color-warning, $lightness: -8%);
 }
 
 .pill--danger {
-  background: rgba(239, 68, 68, 0.12);
+  background: rgba($color-danger, 0.1);
   color: $color-danger;
 }
 
@@ -74,8 +74,8 @@
 
     &:focus {
       outline: none;
-      border-color: $color-primary;
-      box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.12);
+      border-color: $color-accent;
+      box-shadow: 0 0 0 3px rgba($color-accent, 0.14);
     }
   }
 
