@@ -27,7 +27,7 @@
 
 .hero__cover {
   position: relative;
-  height: 220px;
+  height: 140px;
   background: $gradient-brand;
   overflow: hidden;
 
@@ -35,6 +35,10 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  @include tablet-up {
+    height: 180px;
   }
 }
 
