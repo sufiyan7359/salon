@@ -22,10 +22,15 @@
 }
 
 .my-entry-banner {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: $space-4;
-  margin: $space-5 $space-5 0;
+  // Pulled up to overlap the bottom of the hero cover, so it reads as one
+  // connected hero unit instead of two separate "waiting" blocks stacked
+  // back to back.
+  margin: -2.5rem $space-5 0;
   padding: $space-4 $space-5;
   border-radius: $radius-lg;
   background: $color-primary;
