@@ -152,6 +152,13 @@ export class QueueService {
         await this.queueRepository.update(entry.id, {
           reminderSentAt: new Date(),
         });
+        this.eventEmitter.emit('queue.customer-arriving-soon', {
+          salonId,
+          entryId: entry.id,
+          tokenNumber: entry.tokenNumber,
+          customerName: entry.customer.name,
+          estimatedWaitMinutes: entry.estimatedWaitMinutes,
+        });
       } catch (error) {
         this.logger.error(
           `Failed to send turn-reminder SMS for queue entry ${entry.id}`,

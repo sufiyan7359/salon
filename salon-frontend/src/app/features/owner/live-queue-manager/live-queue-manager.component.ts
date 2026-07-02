@@ -13,6 +13,13 @@ import { extractErrorMessage } from '../../../core/utils/http-error.util';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 import { fadeIn } from '../../../shared/animations/fade-slide.animation';
 
+interface CustomerArrivingSoonPayload {
+  entryId: string;
+  tokenNumber: number;
+  customerName: string | null;
+  estimatedWaitMinutes: number | null;
+}
+
 @Component({
   selector: 'app-live-queue-manager',
   imports: [FormsModule, SkeletonComponent, TranslocoPipe],
@@ -46,7 +53,7 @@ export class LiveQueueManagerComponent implements OnInit, OnDestroy {
     this.entries().filter((e) => e.status === 'in_service'),
   );
 
-  private subscription?: Subscription;
+  private readonly subscriptions: Subscription[] = [];
   private salonId = '';
 
   async ngOnInit(): Promise<void> {
@@ -68,13 +75,30 @@ export class LiveQueueManagerComponent implements OnInit, OnDestroy {
     }
 
     this.socketService.joinSalonRoom(this.salonId);
-    this.subscription = this.socketService
-      .on<QueueEntryWithPosition[]>('queue_updated')
-      .subscribe((list) => this.entries.set(list));
+    this.subscriptions.push(
+      this.socketService
+        .on<QueueEntryWithPosition[]>('queue_updated')
+        .subscribe((list) => this.entries.set(list)),
+    );
+
+    this.subscriptions.push(
+      this.socketService
+        .on<CustomerArrivingSoonPayload>('customer_arriving_soon')
+        .subscribe((payload) => {
+          this.toast.show(
+            translate('ownerQueue.toastCustomerArrivingSoon', {
+              token: payload.tokenNumber,
+              name: payload.customerName || translate('common.anonymous'),
+              minutes: payload.estimatedWaitMinutes ?? 0,
+            }),
+            'info',
+          );
+        }),
+    );
   }
 
   ngOnDestroy(): void {
-    this.subscription?.unsubscribe();
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 
   async callNext(entry: QueueEntryWithPosition): Promise<void> {

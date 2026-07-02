@@ -178,7 +178,8 @@
     "toastTokenRemoved": "Token #{{token}} removed",
     "toastNamePhoneRequired": "Name and phone number are required",
     "toastSelectService": "Select at least one service",
-    "toastWalkInAdded": "Walk-in added to the queue"
+    "toastWalkInAdded": "Walk-in added to the queue",
+    "toastCustomerArrivingSoon": "Token #{{token}} ({{name}}) is arriving in ~{{minutes}} min"
   },
   "ownerServices": {
     "title": "Services",

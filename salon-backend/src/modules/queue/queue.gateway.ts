@@ -102,6 +102,24 @@ export class QueueGateway {
     }
   }
 
+  @OnEvent('queue.customer-arriving-soon')
+  handleCustomerArrivingSoon(payload: {
+    salonId: string;
+    entryId: string;
+    tokenNumber: number;
+    customerName: string | null;
+    estimatedWaitMinutes: number | null;
+  }) {
+    this.server
+      .to(this.salonRoom(payload.salonId))
+      .emit('customer_arriving_soon', {
+        entryId: payload.entryId,
+        tokenNumber: payload.tokenNumber,
+        customerName: payload.customerName,
+        estimatedWaitMinutes: payload.estimatedWaitMinutes,
+      });
+  }
+
   private salonRoom(salonId: string): string {
     return `salon:${salonId}`;
   }

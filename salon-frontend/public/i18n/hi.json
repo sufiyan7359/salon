@@ -178,7 +178,8 @@
     "toastTokenRemoved": "टोकन #{{token}} हटाया गया",
     "toastNamePhoneRequired": "नाम और फोन नंबर जरूरी है",
     "toastSelectService": "कम से कम एक सर्विस चुनें",
-    "toastWalkInAdded": "वॉक-इन क्यू में जोड़ा गया"
+    "toastWalkInAdded": "वॉक-इन क्यू में जोड़ा गया",
+    "toastCustomerArrivingSoon": "टोकन #{{token}} ({{name}}) ~{{minutes}} मिनट में पहुंच रहे हैं"
   },
   "ownerServices": {
     "title": "सर्विसेज़",
