@@ -10,7 +10,11 @@ services:
     runtime: node
     plan: free
     rootDir: salon-backend
-    buildCommand: npm install && npm run build
+    # NODE_ENV=production below makes plain `npm install` skip
+    # devDependencies (nest CLI, typescript) - --include=dev forces them
+    # in since they're needed to actually build, even though they're not
+    # needed at runtime.
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm run migration:run:prod && node dist/main
     envVars:
       - key: NODE_ENV
@@ -66,7 +70,9 @@ services:
     name: shadab-yaseen-salon-app
     runtime: static
     rootDir: salon-frontend
-    buildCommand: npm install && npm run build
+    # Static sites build in a production-like environment too, so force
+    # devDependencies (@angular/cli) in the same way as the backend.
+    buildCommand: npm install --include=dev && npm run build
     staticPublishPath: dist/salon-frontend/browser
     routes:
       - type: rewrite
