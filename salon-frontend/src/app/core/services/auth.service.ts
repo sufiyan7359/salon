@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AuthResponse, PublicUser } from '../models/user.model';
+import { AuthResponse, AuthTokens, PublicUser } from '../models/user.model';
 
 const ACCESS_TOKEN_KEY = 'salon_access_token';
 const REFRESH_TOKEN_KEY = 'salon_refresh_token';
@@ -20,6 +20,8 @@ export class AuthService {
     () => this.currentUserSignal()?.role === 'customer',
   );
   readonly isOwner = computed(() => this.currentUserSignal()?.role === 'owner');
+
+  private refreshInFlight: Promise<string | null> | null = null;
 
   constructor(private readonly http: HttpClient) {}
 
@@ -84,6 +86,42 @@ export class AuthService {
 
   getAccessToken(): string | null {
     return localStorage.getItem(ACCESS_TOKEN_KEY);
+  }
+
+  getRefreshToken(): string | null {
+    return localStorage.getItem(REFRESH_TOKEN_KEY);
+  }
+
+  // Concurrent 401s all share one in-flight refresh instead of racing separate calls.
+  refreshAccessToken(): Promise<string | null> {
+    if (!this.refreshInFlight) {
+      this.refreshInFlight = this.performRefresh().finally(() => {
+        this.refreshInFlight = null;
+      });
+    }
+    return this.refreshInFlight;
+  }
+
+  private async performRefresh(): Promise<string | null> {
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
+      this.logout();
+      return null;
+    }
+
+    try {
+      const tokens = await firstValueFrom(
+        this.http.post<AuthTokens>(`${environment.apiUrl}/auth/refresh-token`, {
+          refreshToken,
+        }),
+      );
+      localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
+      localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
+      return tokens.accessToken;
+    } catch {
+      this.logout();
+      return null;
+    }
   }
 
   private persistSession(response: AuthResponse): void {
