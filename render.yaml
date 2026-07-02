@@ -1,0 +1,74 @@
+databases:
+  - name: shadab-yaseen-salon-db
+    databaseName: salon_db
+    user: salon_user
+    plan: free
+
+services:
+  - type: web
+    name: shadab-yaseen-salon-api
+    runtime: node
+    plan: free
+    rootDir: salon-backend
+    buildCommand: npm install && npm run build
+    startCommand: npm run migration:run:prod && node dist/main
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ORIGIN
+        value: https://shadab-yaseen-salon-app.onrender.com
+      - key: DB_HOST
+        fromDatabase:
+          name: shadab-yaseen-salon-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: shadab-yaseen-salon-db
+          property: port
+      - key: DB_USERNAME
+        fromDatabase:
+          name: shadab-yaseen-salon-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: shadab-yaseen-salon-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: shadab-yaseen-salon-db
+          property: database
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: OTP_EXPIRES_IN_MINUTES
+        value: 5
+      - key: OTP_LENGTH
+        value: 6
+      # Left blank on purpose - the app safely falls back to stub mode
+      # (OTP codes logged, no real SMS) until these are filled in via the
+      # Render dashboard. Set OTP_PROVIDER=twilio once the other three
+      # are filled in to switch on real SMS delivery.
+      - key: OTP_PROVIDER
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_FROM_NUMBER
+        sync: false
+
+  - type: web
+    name: shadab-yaseen-salon-app
+    runtime: static
+    rootDir: salon-frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist/salon-frontend/browser
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
