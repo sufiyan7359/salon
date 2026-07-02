@@ -1,15 +1,15 @@
 <div class="page">
   <div class="page__header">
-    <h1>Staff</h1>
+    <h1>{{ 'ownerStaff.title' | transloco }}</h1>
     <button type="button" class="btn btn--primary btn--sm" (click)="showForm() ? cancelForm() : openCreate()">
-      {{ showForm() ? 'Cancel' : '+ Add Staff' }}
+      {{ (showForm() ? 'ownerStaff.cancel' : 'ownerStaff.addStaff') | transloco }}
     </button>
   </div>
 
   @if (showForm()) {
     <div class="entity-form" @fadeIn>
       <div class="form-field">
-        <label for="stName">Name</label>
+        <label for="stName">{{ 'ownerStaff.nameLabel' | transloco }}</label>
         <input
           id="stName"
           type="text"
@@ -18,17 +18,17 @@
         />
       </div>
       <div class="form-field">
-        <label for="stSpec">Specialization (optional)</label>
+        <label for="stSpec">{{ 'ownerStaff.specializationLabel' | transloco }}</label>
         <input
           id="stSpec"
           type="text"
-          placeholder="Haircuts, coloring..."
+          placeholder="{{ 'ownerStaff.specializationPlaceholder' | transloco }}"
           [ngModel]="formSpecialization()"
           (ngModelChange)="formSpecialization.set($event)"
         />
       </div>
       <button type="button" class="btn btn--primary btn--block" [disabled]="saving()" (click)="submitForm()">
-        {{ saving() ? 'Saving...' : editingId() ? 'Save Changes' : 'Add Staff' }}
+        {{ (saving() ? 'ownerStaff.saving' : editingId() ? 'ownerStaff.saveChanges' : 'ownerStaff.addStaffBtn') | transloco }}
       </button>
     </div>
   }
@@ -40,8 +40,8 @@
     </div>
   } @else if (staff().length === 0) {
     <div class="empty-state">
-      <h2>No staff added yet</h2>
-      <p>Add your team so customers can choose a preferred stylist when joining the queue.</p>
+      <h2>{{ 'ownerStaff.noStaffTitle' | transloco }}</h2>
+      <p>{{ 'ownerStaff.noStaffSubtitle' | transloco }}</p>
     </div>
   } @else {
     <div class="entity-list">
@@ -55,10 +55,10 @@
           </div>
           <div class="entity-card__actions">
             <button type="button" class="pill" [class]="member.isAvailable ? 'pill--success' : 'pill--neutral'" (click)="toggleAvailable(member)">
-              {{ member.isAvailable ? 'Available' : 'Unavailable' }}
+              {{ (member.isAvailable ? 'ownerStaff.available' : 'ownerStaff.unavailable') | transloco }}
             </button>
-            <button type="button" class="btn btn--ghost btn--sm" (click)="openEdit(member)">Edit</button>
-            <button type="button" class="btn btn--ghost btn--sm" (click)="remove(member)">Delete</button>
+            <button type="button" class="btn btn--ghost btn--sm" (click)="openEdit(member)">{{ 'ownerStaff.edit' | transloco }}</button>
+            <button type="button" class="btn btn--ghost btn--sm" (click)="remove(member)">{{ 'ownerStaff.delete' | transloco }}</button>
           </div>
         </div>
       }

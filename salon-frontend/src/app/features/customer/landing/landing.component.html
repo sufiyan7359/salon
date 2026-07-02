@@ -7,8 +7,8 @@
   </div>
 } @else if (notFound()) {
   <div class="empty-state" @fadeIn>
-    <h2>No salon set up yet</h2>
-    <p>Check back soon &mdash; the salon owner is still setting things up.</p>
+    <h2>{{ 'landing.notFoundTitle' | transloco }}</h2>
+    <p>{{ 'landing.notFoundSubtitle' | transloco }}</p>
   </div>
 } @else if (salon(); as s) {
   <section class="hero" @fadeIn>
@@ -19,9 +19,9 @@
       @if (!myEntry()) {
         <div class="hero__badge">
           @if (waitingCount() === 0) {
-            <span class="pill pill--success">No wait right now</span>
+            <span class="pill pill--success">{{ 'landing.noWaitRightNow' | transloco }}</span>
           } @else {
-            <span class="pill pill--warning">{{ waitingCount() }} waiting</span>
+            <span class="pill pill--warning">{{ 'landing.waitingCount' | transloco: { count: waitingCount() } }}</span>
           }
         </div>
       }
@@ -30,17 +30,17 @@
     @if (myEntry(); as entry) {
       <a [routerLink]="['/queue', entry.id]" class="my-entry-banner" @fadeIn>
         <div class="my-entry-banner__token">
-          <span class="my-entry-banner__token-label">Token</span>
+          <span class="my-entry-banner__token-label">{{ 'landing.tokenLabel' | transloco }}</span>
           <span class="my-entry-banner__token-number" [@numberBump]="entry.tokenNumber">{{ entry.tokenNumber }}</span>
         </div>
         <div class="my-entry-banner__info">
-          <span class="my-entry-banner__status">{{ myEntryStatusLabel() }}</span>
+          <span class="my-entry-banner__status">{{ 'queueStatus.' + entry.status | transloco }}</span>
           @if (entry.status === 'waiting' || entry.status === 'next') {
             <span class="my-entry-banner__detail">
-              {{ entry.peopleAhead }} ahead &middot; ~{{ entry.estimatedWaitMinutes ?? 0 }} min
+              {{ 'landing.peopleAheadDetail' | transloco: { count: entry.peopleAhead, minutes: entry.estimatedWaitMinutes ?? 0 } }}
             </span>
           } @else if (entry.status === 'in_service') {
-            <span class="my-entry-banner__detail">You're up now!</span>
+            <span class="my-entry-banner__detail">{{ 'landing.youAreUpNow' | transloco }}</span>
           }
         </div>
         <span class="my-entry-banner__arrow">&rarr;</span>
@@ -52,12 +52,12 @@
       @if (reviews().length > 0) {
         <div class="hero__rating">
           <app-star-rating [rating]="s.avgRating" size="sm" />
-          <span>{{ s.avgRating }} ({{ reviews().length }} review{{ reviews().length === 1 ? '' : 's' }})</span>
+          <span>{{ s.avgRating }} ({{ (reviews().length === 1 ? 'landing.reviewCount' : 'landing.reviewCountPlural') | transloco: { count: reviews().length } }})</span>
         </div>
       }
       <p class="hero__address">{{ s.address }}@if (s.city) {, {{ s.city }}}</p>
       @if (s.openingTime && s.closingTime) {
-        <p class="hero__hours">Open {{ s.openingTime }} &ndash; {{ s.closingTime }}</p>
+        <p class="hero__hours">{{ 'landing.openHours' | transloco: { opening: s.openingTime, closing: s.closingTime } }}</p>
       }
       @if (s.description) {
         <p class="hero__description">{{ s.description }}</p>
@@ -67,7 +67,7 @@
 
   @if (services().length > 0) {
     <section class="section">
-      <h2 class="section__title">Services</h2>
+      <h2 class="section__title">{{ 'landing.servicesTitle' | transloco }}</h2>
       <div class="service-list">
         @for (service of services(); track service.id) {
           <div class="service-card">
@@ -89,7 +89,7 @@
 
   @if (staff().length > 0) {
     <section class="section">
-      <h2 class="section__title">Our Team</h2>
+      <h2 class="section__title">{{ 'landing.ourTeamTitle' | transloco }}</h2>
       <div class="staff-row">
         @for (member of staff(); track member.id) {
           <div class="staff-avatar">
@@ -103,12 +103,12 @@
 
   @if (reviews().length > 0) {
     <section class="section">
-      <h2 class="section__title">What Customers Say</h2>
+      <h2 class="section__title">{{ 'landing.reviewsTitle' | transloco }}</h2>
       <div class="review-list">
         @for (review of reviews().slice(0, 5); track review.id) {
           <div class="review-item">
             <div class="review-item__header">
-              <span class="review-item__name">{{ review.customer?.name || 'Anonymous' }}</span>
+              <span class="review-item__name">{{ review.customer?.name || ('common.anonymous' | transloco) }}</span>
               <app-star-rating [rating]="review.rating" size="sm" />
             </div>
             @if (review.comment) {
@@ -121,7 +121,7 @@
   }
 
   <div class="cta-bar">
-    <a routerLink="/join" class="btn btn--primary btn--block">Join Queue</a>
-    <a routerLink="/book" class="btn btn--ghost btn--block">Book for Later</a>
+    <a routerLink="/join" class="btn btn--primary btn--block">{{ 'landing.joinQueueBtn' | transloco }}</a>
+    <a routerLink="/book" class="btn btn--ghost btn--block">{{ 'landing.bookForLaterBtn' | transloco }}</a>
   </div>
 }

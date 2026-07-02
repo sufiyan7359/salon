@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TranslocoPipe, translate } from '@jsverse/transloco';
 import { Salon } from '../../../core/models/salon.model';
 import { SalonService as SalonServiceModel } from '../../../core/models/service.model';
 import { Staff } from '../../../core/models/staff.model';
@@ -19,7 +20,7 @@ const SUCCESS_DISPLAY_MS = 700;
 
 @Component({
   selector: 'app-join-queue',
-  imports: [FormsModule, SkeletonComponent],
+  imports: [FormsModule, SkeletonComponent, TranslocoPipe],
   templateUrl: './join-queue.component.html',
   styleUrl: './join-queue.component.scss',
   animations: [fadeSlide, successPop],
@@ -92,7 +93,7 @@ export class JoinQueueComponent implements OnInit, OnDestroy {
 
   async sendOtp(): Promise<void> {
     if (!this.phoneNumber().trim()) {
-      this.toast.error('Enter your mobile number first');
+      this.toast.error(translate('joinQueue.toastMobileRequired'));
       return;
     }
 
@@ -102,7 +103,7 @@ export class JoinQueueComponent implements OnInit, OnDestroy {
       this.devOtpHint.set(result.devOtp ?? null);
       this.step.set('otp');
       this.startResendCooldown();
-      this.toast.success('OTP sent to your phone');
+      this.toast.success(translate('joinQueue.toastOtpSent'));
     } catch (error) {
       this.toast.error(extractErrorMessage(error));
     } finally {
@@ -112,7 +113,7 @@ export class JoinQueueComponent implements OnInit, OnDestroy {
 
   async verifyOtp(): Promise<void> {
     if (!this.otpCode().trim()) {
-      this.toast.error('Enter the code we sent you');
+      this.toast.error(translate('joinQueue.toastCodeRequired'));
       return;
     }
 
@@ -149,7 +150,7 @@ export class JoinQueueComponent implements OnInit, OnDestroy {
 
   goToConfirm(): void {
     if (this.selectedServiceIds().size === 0) {
-      this.toast.error('Select at least one service to continue');
+      this.toast.error(translate('joinQueue.toastSelectService'));
       return;
     }
     this.step.set('confirm');

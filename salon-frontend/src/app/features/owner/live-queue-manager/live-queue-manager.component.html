@@ -1,15 +1,15 @@
 <div class="page">
   <div class="page__header">
-    <h1>Live Queue</h1>
+    <h1>{{ 'ownerQueue.title' | transloco }}</h1>
     <button type="button" class="btn btn--primary btn--sm" (click)="showWalkIn.set(!showWalkIn())">
-      {{ showWalkIn() ? 'Cancel' : '+ Add Walk-in' }}
+      {{ (showWalkIn() ? 'ownerQueue.cancel' : 'ownerQueue.addWalkIn') | transloco }}
     </button>
   </div>
 
   @if (showWalkIn()) {
     <div class="entity-form" @fadeIn>
       <div class="form-field">
-        <label for="wName">Customer name</label>
+        <label for="wName">{{ 'ownerQueue.customerName' | transloco }}</label>
         <input
           id="wName"
           type="text"
@@ -18,7 +18,7 @@
         />
       </div>
       <div class="form-field">
-        <label for="wPhone">Phone number</label>
+        <label for="wPhone">{{ 'ownerQueue.phoneNumber' | transloco }}</label>
         <input
           id="wPhone"
           type="tel"
@@ -28,7 +28,7 @@
         />
       </div>
       <div class="form-field">
-        <label>Services</label>
+        <label>{{ 'ownerQueue.servicesLabel' | transloco }}</label>
         <div class="walkin-form__chips">
           @for (service of services(); track service.id) {
             <button
@@ -44,7 +44,7 @@
       </div>
       @if (staff().length > 0) {
         <div class="form-field">
-          <label>Preferred staff</label>
+          <label>{{ 'ownerQueue.preferredStaffLabel' | transloco }}</label>
           <div class="walkin-form__chips">
             <button
               type="button"
@@ -52,7 +52,7 @@
               [class.selected]="walkInStaffId() === undefined"
               (click)="walkInStaffId.set(undefined)"
             >
-              No preference
+              {{ 'common.noPreference' | transloco }}
             </button>
             @for (member of staff(); track member.id) {
               <button
@@ -73,7 +73,7 @@
         [disabled]="submittingWalkIn()"
         (click)="submitWalkIn()"
       >
-        {{ submittingWalkIn() ? 'Adding...' : 'Add to Queue' }}
+        {{ (submittingWalkIn() ? 'ownerQueue.adding' : 'ownerQueue.addToQueue') | transloco }}
       </button>
     </div>
   }
@@ -85,7 +85,7 @@
     </div>
   } @else {
     @if (inServiceEntries().length > 0) {
-      <h2 class="section-label">In Service</h2>
+      <h2 class="section-label">{{ 'ownerQueue.inServiceTitle' | transloco }}</h2>
       <div class="entity-list">
         @for (entry of inServiceEntries(); track entry.id) {
           <div class="queue-card in_service" @fadeIn>
@@ -94,7 +94,7 @@
               <span class="queue-card__name">{{ entry.customer?.name || entry.customer?.phoneNumber }}</span>
               <span class="queue-card__services">{{ entry.services.map(s => s.name).join(', ') }}</span>
               @if (entry.staff) {
-                <span class="queue-card__staff">With {{ entry.staff.name }}</span>
+                <span class="queue-card__staff">{{ 'common.with' | transloco }} {{ entry.staff.name }}</span>
               }
             </div>
             <div class="queue-card__actions">
@@ -104,7 +104,7 @@
                 [disabled]="actioningId() === entry.id"
                 (click)="complete(entry)"
               >
-                Complete
+                {{ 'ownerQueue.complete' | transloco }}
               </button>
               <button
                 type="button"
@@ -112,7 +112,7 @@
                 [disabled]="actioningId() === entry.id"
                 (click)="noShow(entry)"
               >
-                No-show
+                {{ 'ownerQueue.noShow' | transloco }}
               </button>
             </div>
           </div>
@@ -120,11 +120,11 @@
       </div>
     }
 
-    <h2 class="section-label">Waiting ({{ waitingEntries().length }})</h2>
+    <h2 class="section-label">{{ 'ownerQueue.waitingTitle' | transloco: { count: waitingEntries().length } }}</h2>
     @if (waitingEntries().length === 0) {
       <div class="empty-state">
-        <h2>No one's waiting</h2>
-        <p>New customers who join the queue will show up here in real time.</p>
+        <h2>{{ 'ownerQueue.noOneWaitingTitle' | transloco }}</h2>
+        <p>{{ 'ownerQueue.noOneWaitingSubtitle' | transloco }}</p>
       </div>
     } @else {
       <div class="entity-list">
@@ -135,7 +135,7 @@
               <span class="queue-card__name">{{ entry.customer?.name || entry.customer?.phoneNumber }}</span>
               <span class="queue-card__services">{{ entry.services.map(s => s.name).join(', ') }}</span>
               @if (entry.staff) {
-                <span class="queue-card__staff">Prefers {{ entry.staff.name }}</span>
+                <span class="queue-card__staff">{{ 'ownerQueue.prefers' | transloco: { name: entry.staff.name } }}</span>
               }
             </div>
             <div class="queue-card__actions">
@@ -145,7 +145,7 @@
                 [disabled]="actioningId() === entry.id"
                 (click)="callNext(entry)"
               >
-                Call Next
+                {{ 'ownerQueue.callNext' | transloco }}
               </button>
               <button
                 type="button"
@@ -153,7 +153,7 @@
                 [disabled]="actioningId() === entry.id"
                 (click)="remove(entry)"
               >
-                Remove
+                {{ 'ownerQueue.remove' | transloco }}
               </button>
             </div>
           </div>

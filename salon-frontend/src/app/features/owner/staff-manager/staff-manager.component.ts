@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TranslocoPipe, translate } from '@jsverse/transloco';
 import { Staff } from '../../../core/models/staff.model';
 import { SalonService } from '../../../core/services/salon.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -9,7 +10,7 @@ import { fadeIn } from '../../../shared/animations/fade-slide.animation';
 
 @Component({
   selector: 'app-staff-manager',
-  imports: [FormsModule, SkeletonComponent],
+  imports: [FormsModule, SkeletonComponent, TranslocoPipe],
   templateUrl: './staff-manager.component.html',
   styleUrl: './staff-manager.component.scss',
   animations: [fadeIn],
@@ -56,7 +57,7 @@ export class StaffManagerComponent implements OnInit {
 
   async submitForm(): Promise<void> {
     if (!this.formName().trim()) {
-      this.toast.error('Name is required');
+      this.toast.error(translate('ownerStaff.toastNameRequired'));
       return;
     }
 
@@ -69,10 +70,10 @@ export class StaffManagerComponent implements OnInit {
 
       if (this.editingId()) {
         await this.salonService.updateStaff(this.editingId()!, payload);
-        this.toast.success('Staff member updated');
+        this.toast.success(translate('ownerStaff.toastUpdated'));
       } else {
         await this.salonService.createStaff(this.salonId, payload);
-        this.toast.success('Staff member added');
+        this.toast.success(translate('ownerStaff.toastAdded'));
       }
 
       this.showForm.set(false);
@@ -96,10 +97,10 @@ export class StaffManagerComponent implements OnInit {
   }
 
   async remove(member: Staff): Promise<void> {
-    if (!confirm(`Remove "${member.name}" from your staff?`)) return;
+    if (!confirm(translate('ownerStaff.confirmRemove', { name: member.name }))) return;
     try {
       await this.salonService.deleteStaff(member.id);
-      this.toast.success('Staff member removed');
+      this.toast.success(translate('ownerStaff.toastRemoved'));
       await this.refresh();
     } catch (error) {
       this.toast.error(extractErrorMessage(error));

@@ -1,4 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { TranslocoPipe, translate } from '@jsverse/transloco';
 import { Booking } from '../../../core/models/booking.model';
 import { SalonService } from '../../../core/services/salon.service';
 import { BookingService } from '../../../core/services/booking.service';
@@ -9,7 +10,7 @@ import { fadeIn } from '../../../shared/animations/fade-slide.animation';
 
 @Component({
   selector: 'app-bookings-manager',
-  imports: [SkeletonComponent],
+  imports: [SkeletonComponent, TranslocoPipe],
   templateUrl: './bookings-manager.component.html',
   styleUrl: './bookings-manager.component.scss',
   animations: [fadeIn],
@@ -52,7 +53,7 @@ export class BookingsManagerComponent implements OnInit {
   }
 
   async cancel(booking: Booking): Promise<void> {
-    if (!confirm('Cancel this booking?')) return;
+    if (!confirm(translate('booking.confirmCancel'))) return;
     await this.setStatus(booking, 'cancelled');
   }
 
@@ -63,7 +64,7 @@ export class BookingsManagerComponent implements OnInit {
     this.actioningId.set(booking.id);
     try {
       await this.bookingService.updateStatus(booking.id, status);
-      this.toast.success('Booking updated');
+      this.toast.success(translate('ownerBookings.toastUpdated'));
       await this.refresh();
     } catch (error) {
       this.toast.error(extractErrorMessage(error));

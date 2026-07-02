@@ -6,8 +6,8 @@
   </div>
 } @else if (notFound()) {
   <div class="empty-state" @fadeIn>
-    <h2>We couldn't find that queue ticket</h2>
-    <p>It may have expired or already been completed.</p>
+    <h2>{{ 'liveTracking.notFoundTitle' | transloco }}</h2>
+    <p>{{ 'liveTracking.notFoundSubtitle' | transloco }}</p>
   </div>
 } @else if (entry(); as e) {
   <div class="tracking" @fadeIn>
@@ -23,24 +23,24 @@
         />
       </svg>
       <div class="token-ring__content">
-        <span class="token-ring__label">Token</span>
+        <span class="token-ring__label">{{ 'landing.tokenLabel' | transloco }}</span>
         <span class="token-ring__number" [@numberBump]="e.tokenNumber">{{ e.tokenNumber }}</span>
       </div>
     </div>
 
-    <span class="status-badge" [class]="e.status">{{ statusLabel() }}</span>
+    <span class="status-badge" [class]="e.status">{{ 'queueStatus.' + e.status | transloco }}</span>
 
     @if (isActive()) {
       <div class="stats-row">
         <div class="stat">
           <span class="stat__value" [@numberBump]="e.peopleAhead">{{ e.peopleAhead }}</span>
-          <span class="stat__label">people ahead</span>
+          <span class="stat__label">{{ 'liveTracking.peopleAheadLabel' | transloco }}</span>
         </div>
         <div class="stat">
           <span class="stat__value" [@numberBump]="e.estimatedWaitMinutes ?? 0">
             {{ e.estimatedWaitMinutes ?? 0 }}
           </span>
-          <span class="stat__label">est. minutes</span>
+          <span class="stat__label">{{ 'liveTracking.estMinutesLabel' | transloco }}</span>
         </div>
       </div>
     }
@@ -52,13 +52,13 @@
     }
 
     @if (e.status === 'completed') {
-      <p class="tracking__message">Thanks for visiting! See you again soon.</p>
+      <p class="tracking__message">{{ 'liveTracking.thanksVisiting' | transloco }}</p>
 
       @if (reviewSubmitted()) {
-        <p class="tracking__message">Thanks for your feedback!</p>
+        <p class="tracking__message">{{ 'liveTracking.thanksFeedback' | transloco }}</p>
       } @else if (canReview()) {
         <div class="review-card" @fadeIn>
-          <p class="review-card__title">Rate your visit</p>
+          <p class="review-card__title">{{ 'liveTracking.rateVisit' | transloco }}</p>
           <app-star-rating
             [rating]="reviewRating()"
             [interactive]="true"
@@ -67,7 +67,7 @@
           <textarea
             class="review-card__comment"
             rows="3"
-            placeholder="Leave a comment (optional)"
+            placeholder="{{ 'liveTracking.commentPlaceholder' | transloco }}"
             [ngModel]="reviewComment()"
             (ngModelChange)="reviewComment.set($event)"
           ></textarea>
@@ -77,14 +77,14 @@
             [disabled]="submittingReview()"
             (click)="submitReview()"
           >
-            {{ submittingReview() ? 'Submitting...' : 'Submit Review' }}
+            {{ (submittingReview() ? 'liveTracking.submitting' : 'liveTracking.submitReview') | transloco }}
           </button>
         </div>
       }
     } @else if (e.status === 'cancelled') {
-      <p class="tracking__message">You've left the queue.</p>
+      <p class="tracking__message">{{ 'liveTracking.leftQueue' | transloco }}</p>
     } @else if (e.status === 'no_show') {
-      <p class="tracking__message">You missed your turn. Please rejoin if you're still around.</p>
+      <p class="tracking__message">{{ 'liveTracking.missedTurn' | transloco }}</p>
     }
 
     @if (isActive()) {
@@ -94,7 +94,7 @@
         [disabled]="leaving()"
         (click)="leaveQueue()"
       >
-        {{ leaving() ? 'Leaving...' : 'Leave Queue' }}
+        {{ (leaving() ? 'liveTracking.leaving' : 'liveTracking.leaveQueue') | transloco }}
       </button>
     }
   </div>

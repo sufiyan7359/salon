@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TranslocoPipe, translate } from '@jsverse/transloco';
 import { Salon } from '../../../core/models/salon.model';
 import { Booking } from '../../../core/models/booking.model';
 import { SalonService as SalonServiceModel } from '../../../core/models/service.model';
@@ -18,7 +19,7 @@ const RESEND_COOLDOWN_SECONDS = 60;
 
 @Component({
   selector: 'app-booking',
-  imports: [FormsModule, SkeletonComponent],
+  imports: [FormsModule, SkeletonComponent, TranslocoPipe],
   templateUrl: './booking.component.html',
   styleUrl: './booking.component.scss',
   animations: [fadeIn, fadeSlide],
@@ -77,7 +78,7 @@ export class BookingComponent implements OnInit {
 
   async sendOtp(): Promise<void> {
     if (!this.phoneNumber().trim()) {
-      this.toast.error('Enter your mobile number first');
+      this.toast.error(translate('booking.toastMobileRequired'));
       return;
     }
 
@@ -96,7 +97,7 @@ export class BookingComponent implements OnInit {
 
   async verifyOtp(): Promise<void> {
     if (!this.otpCode().trim()) {
-      this.toast.error('Enter the code we sent you');
+      this.toast.error(translate('booking.toastCodeRequired'));
       return;
     }
 
@@ -117,7 +118,7 @@ export class BookingComponent implements OnInit {
     if (!salon) return;
 
     if (!this.selectedServiceId() || !this.bookingDate() || !this.bookingTime()) {
-      this.toast.error('Select a service, date and time');
+      this.toast.error(translate('booking.toastSelectAll'));
       return;
     }
 
@@ -130,7 +131,7 @@ export class BookingComponent implements OnInit {
         bookingDate: this.bookingDate(),
         bookingTime: this.bookingTime(),
       });
-      this.toast.success("Booking requested! We'll confirm it shortly.");
+      this.toast.success(translate('booking.toastRequested'));
       this.selectedServiceId.set('');
       this.selectedStaffId.set(undefined);
       this.bookingDate.set('');
@@ -144,10 +145,10 @@ export class BookingComponent implements OnInit {
   }
 
   async cancelBooking(booking: Booking): Promise<void> {
-    if (!confirm('Cancel this booking?')) return;
+    if (!confirm(translate('booking.confirmCancel'))) return;
     try {
       await this.bookingService.updateStatus(booking.id, 'cancelled');
-      this.toast.success('Booking cancelled');
+      this.toast.success(translate('booking.toastCancelled'));
       await this.refreshMyBookings();
     } catch (error) {
       this.toast.error(extractErrorMessage(error));

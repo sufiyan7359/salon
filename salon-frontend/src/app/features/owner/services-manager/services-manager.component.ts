@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TranslocoPipe, translate } from '@jsverse/transloco';
 import { SalonService as SalonServiceModel } from '../../../core/models/service.model';
 import { SalonService } from '../../../core/services/salon.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -9,7 +10,7 @@ import { fadeIn } from '../../../shared/animations/fade-slide.animation';
 
 @Component({
   selector: 'app-services-manager',
-  imports: [FormsModule, SkeletonComponent],
+  imports: [FormsModule, SkeletonComponent, TranslocoPipe],
   templateUrl: './services-manager.component.html',
   styleUrl: './services-manager.component.scss',
   animations: [fadeIn],
@@ -62,7 +63,7 @@ export class ServicesManagerComponent implements OnInit {
 
   async submitForm(): Promise<void> {
     if (!this.formName().trim() || !this.formPrice() || !this.formDuration()) {
-      this.toast.error('Name, price and duration are required');
+      this.toast.error(translate('ownerServices.toastRequired'));
       return;
     }
 
@@ -77,10 +78,10 @@ export class ServicesManagerComponent implements OnInit {
 
       if (this.editingId()) {
         await this.salonService.updateService(this.editingId()!, payload);
-        this.toast.success('Service updated');
+        this.toast.success(translate('ownerServices.toastUpdated'));
       } else {
         await this.salonService.createService(this.salonId, payload);
-        this.toast.success('Service added');
+        this.toast.success(translate('ownerServices.toastAdded'));
       }
 
       this.showForm.set(false);
@@ -104,10 +105,10 @@ export class ServicesManagerComponent implements OnInit {
   }
 
   async remove(service: SalonServiceModel): Promise<void> {
-    if (!confirm(`Delete "${service.name}"? This can't be undone.`)) return;
+    if (!confirm(translate('ownerServices.confirmDelete', { name: service.name }))) return;
     try {
       await this.salonService.deleteService(service.id);
-      this.toast.success('Service deleted');
+      this.toast.success(translate('ownerServices.toastDeleted'));
       await this.refresh();
     } catch (error) {
       this.toast.error(extractErrorMessage(error));

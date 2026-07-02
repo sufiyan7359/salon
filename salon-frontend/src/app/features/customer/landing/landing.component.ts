@@ -1,13 +1,13 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { Salon } from '../../../core/models/salon.model';
 import { SalonService as SalonServiceModel } from '../../../core/models/service.model';
 import { Staff } from '../../../core/models/staff.model';
 import { Review } from '../../../core/models/review.model';
 import {
   ACTIVE_QUEUE_STATUSES,
-  QUEUE_STATUS_LABELS,
   QueueEntryWithPosition,
 } from '../../../core/models/queue-entry.model';
 import { SalonService } from '../../../core/services/salon.service';
@@ -28,7 +28,7 @@ interface StatusChangedPayload {
 
 @Component({
   selector: 'app-landing',
-  imports: [RouterLink, SkeletonComponent, StarRatingComponent],
+  imports: [RouterLink, SkeletonComponent, StarRatingComponent, TranslocoPipe],
   templateUrl: './landing.component.html',
   styleUrl: './landing.component.scss',
   animations: [fadeIn, numberBump],
@@ -48,7 +48,6 @@ export class LandingComponent implements OnInit, OnDestroy {
   readonly notFound = signal(false);
 
   readonly myEntry = signal<QueueEntryWithPosition | null>(null);
-  readonly myEntryStatusLabel = signal('');
 
   private activeEntryId: string | null = null;
   private readonly subscriptions: Subscription[] = [];
@@ -100,7 +99,6 @@ export class LandingComponent implements OnInit, OnDestroy {
     try {
       const entry = await this.queueService.getMyStatus(entryId);
       this.myEntry.set(entry);
-      this.myEntryStatusLabel.set(QUEUE_STATUS_LABELS[entry.status]);
       this.activeEntryId = entryId;
 
       this.socketService.joinQueueRoom(entryId);
@@ -140,6 +138,5 @@ export class LandingComponent implements OnInit, OnDestroy {
           }
         : current,
     );
-    this.myEntryStatusLabel.set(QUEUE_STATUS_LABELS[payload.status]);
   }
 }

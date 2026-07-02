@@ -20,13 +20,19 @@
   gap: $space-4;
 }
 
+.login-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $space-2;
+}
+
 .login-card__brand {
   display: flex;
   align-items: center;
   gap: $space-2;
   font-family: $font-display;
   font-weight: 600;
-  margin-bottom: $space-2;
 }
 
 .login-card__mark {

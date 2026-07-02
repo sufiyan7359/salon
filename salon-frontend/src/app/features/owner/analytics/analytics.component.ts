@@ -1,4 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { AnalyticsSummary } from '../../../core/models/analytics.model';
 import { SalonService } from '../../../core/services/salon.service';
 import { AnalyticsService } from '../../../core/services/analytics.service';
@@ -8,7 +9,7 @@ import { fadeIn } from '../../../shared/animations/fade-slide.animation';
 
 @Component({
   selector: 'app-analytics',
-  imports: [SkeletonComponent, StarRatingComponent],
+  imports: [SkeletonComponent, StarRatingComponent, TranslocoPipe],
   templateUrl: './analytics.component.html',
   styleUrl: './analytics.component.scss',
   animations: [fadeIn],

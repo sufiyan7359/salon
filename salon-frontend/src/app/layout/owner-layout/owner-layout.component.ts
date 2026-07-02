@@ -2,14 +2,16 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { animate, style, transition, trigger } from '@angular/animations';
+import { TranslocoPipe, translate } from '@jsverse/transloco';
 import { AuthService } from '../../core/services/auth.service';
 import { SalonService, SalonPayload } from '../../core/services/salon.service';
 import { ToastService } from '../../core/services/toast.service';
 import { extractErrorMessage } from '../../core/utils/http-error.util';
+import { LanguageSwitcherComponent } from '../../shared/components/language-switcher/language-switcher.component';
 
 @Component({
   selector: 'app-owner-layout',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, FormsModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, FormsModule, TranslocoPipe, LanguageSwitcherComponent],
   templateUrl: './owner-layout.component.html',
   styleUrl: './owner-layout.component.scss',
   animations: [
@@ -49,7 +51,7 @@ export class OwnerLayoutComponent implements OnInit {
       await this.salonService.loadSalon();
     } catch (error) {
       this.loadError.set(true);
-      this.toast.error(extractErrorMessage(error, 'Failed to load your salon'));
+      this.toast.error(extractErrorMessage(error, translate('ownerLayout.loadErrorTitle')));
     } finally {
       this.loading.set(false);
     }
@@ -57,7 +59,7 @@ export class OwnerLayoutComponent implements OnInit {
 
   async submitSetup(): Promise<void> {
     if (!this.setupName().trim() || !this.setupAddress().trim()) {
-      this.toast.error('Salon name and address are required');
+      this.toast.error(translate('ownerLayout.toastSalonRequired'));
       return;
     }
 
@@ -71,7 +73,7 @@ export class OwnerLayoutComponent implements OnInit {
         closingTime: this.setupClosingTime() || undefined,
       };
       await this.salonService.createSalon(payload);
-      this.toast.success('Salon set up! Welcome to your dashboard.');
+      this.toast.success(translate('ownerLayout.toastSalonCreated'));
     } catch (error) {
       this.toast.error(extractErrorMessage(error));
     } finally {

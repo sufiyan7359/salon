@@ -1,15 +1,15 @@
 <div class="page">
   <div class="page__header">
-    <h1>Services</h1>
+    <h1>{{ 'ownerServices.title' | transloco }}</h1>
     <button type="button" class="btn btn--primary btn--sm" (click)="showForm() ? cancelForm() : openCreate()">
-      {{ showForm() ? 'Cancel' : '+ Add Service' }}
+      {{ (showForm() ? 'ownerServices.cancel' : 'ownerServices.addService') | transloco }}
     </button>
   </div>
 
   @if (showForm()) {
     <div class="entity-form" @fadeIn>
       <div class="form-field">
-        <label for="sName">Name</label>
+        <label for="sName">{{ 'ownerServices.nameLabel' | transloco }}</label>
         <input
           id="sName"
           type="text"
@@ -19,7 +19,7 @@
       </div>
       <div class="entity-form__row">
         <div class="form-field">
-          <label for="sPrice">Price (₹)</label>
+          <label for="sPrice">{{ 'ownerServices.priceLabel' | transloco }}</label>
           <input
             id="sPrice"
             type="number"
@@ -29,7 +29,7 @@
           />
         </div>
         <div class="form-field">
-          <label for="sDuration">Duration (min)</label>
+          <label for="sDuration">{{ 'ownerServices.durationLabel' | transloco }}</label>
           <input
             id="sDuration"
             type="number"
@@ -40,17 +40,17 @@
         </div>
       </div>
       <div class="form-field">
-        <label for="sCategory">Category (optional)</label>
+        <label for="sCategory">{{ 'ownerServices.categoryLabel' | transloco }}</label>
         <input
           id="sCategory"
           type="text"
-          placeholder="hair, beard, spa..."
+          placeholder="{{ 'ownerServices.categoryPlaceholder' | transloco }}"
           [ngModel]="formCategory()"
           (ngModelChange)="formCategory.set($event)"
         />
       </div>
       <button type="button" class="btn btn--primary btn--block" [disabled]="saving()" (click)="submitForm()">
-        {{ saving() ? 'Saving...' : editingId() ? 'Save Changes' : 'Add Service' }}
+        {{ (saving() ? 'ownerServices.saving' : editingId() ? 'ownerServices.saveChanges' : 'ownerServices.addServiceBtn') | transloco }}
       </button>
     </div>
   }
@@ -62,8 +62,8 @@
     </div>
   } @else if (services().length === 0) {
     <div class="empty-state">
-      <h2>No services yet</h2>
-      <p>Add your first service so customers can select it when they join the queue.</p>
+      <h2>{{ 'ownerServices.noServicesTitle' | transloco }}</h2>
+      <p>{{ 'ownerServices.noServicesSubtitle' | transloco }}</p>
     </div>
   } @else {
     <div class="entity-list">
@@ -78,10 +78,10 @@
           </div>
           <div class="entity-card__actions">
             <button type="button" class="pill" [class]="service.isActive ? 'pill--success' : 'pill--neutral'" (click)="toggleActive(service)">
-              {{ service.isActive ? 'Active' : 'Inactive' }}
+              {{ (service.isActive ? 'ownerServices.active' : 'ownerServices.inactive') | transloco }}
             </button>
-            <button type="button" class="btn btn--ghost btn--sm" (click)="openEdit(service)">Edit</button>
-            <button type="button" class="btn btn--ghost btn--sm" (click)="remove(service)">Delete</button>
+            <button type="button" class="btn btn--ghost btn--sm" (click)="openEdit(service)">{{ 'ownerServices.edit' | transloco }}</button>
+            <button type="button" class="btn btn--ghost btn--sm" (click)="remove(service)">{{ 'ownerServices.delete' | transloco }}</button>
           </div>
         </div>
       }

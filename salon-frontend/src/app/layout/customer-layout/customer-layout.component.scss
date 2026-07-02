@@ -14,6 +14,7 @@
   z-index: 20;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: $space-4 $space-5;
   background: rgba($color-bg, 0.85);
   backdrop-filter: blur(12px);

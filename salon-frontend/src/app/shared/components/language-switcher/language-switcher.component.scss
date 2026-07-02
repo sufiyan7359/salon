@@ -1,0 +1,27 @@
+@use 'variables' as *;
+
+.lang-switch {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: $radius-pill;
+  background: $color-surface-alt;
+  border: 1px solid $color-border;
+}
+
+.lang-switch__option {
+  border: none;
+  background: transparent;
+  padding: $space-1 $space-3;
+  border-radius: $radius-pill;
+  font-size: $fs-xs;
+  font-weight: 600;
+  font-family: $font-body;
+  color: $color-text-muted;
+  cursor: pointer;
+  transition: background $duration-fast $ease-standard, color $duration-fast $ease-standard;
+
+  &.active {
+    background: $color-primary;
+    color: $color-text-inverse;
+  }
+}

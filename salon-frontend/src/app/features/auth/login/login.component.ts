@@ -1,16 +1,18 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { extractErrorMessage } from '../../../core/utils/http-error.util';
 import { fadeIn } from '../../../shared/animations/fade-slide.animation';
+import { LanguageSwitcherComponent } from '../../../shared/components/language-switcher/language-switcher.component';
 
 type Mode = 'login' | 'register';
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule],
+  imports: [FormsModule, TranslocoPipe, LanguageSwitcherComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
   animations: [fadeIn],

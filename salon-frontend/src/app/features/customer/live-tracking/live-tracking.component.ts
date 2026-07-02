@@ -2,9 +2,9 @@ import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
+import { TranslocoPipe, translate } from '@jsverse/transloco';
 import {
   ACTIVE_QUEUE_STATUSES,
-  QUEUE_STATUS_LABELS,
   QueueEntryWithPosition,
 } from '../../../core/models/queue-entry.model';
 import { QueueService } from '../../../core/services/queue.service';
@@ -32,7 +32,7 @@ interface YourTurnSoonPayload {
 
 @Component({
   selector: 'app-live-tracking',
-  imports: [SkeletonComponent, StarRatingComponent, FormsModule],
+  imports: [SkeletonComponent, StarRatingComponent, FormsModule, TranslocoPipe],
   templateUrl: './live-tracking.component.html',
   styleUrl: './live-tracking.component.scss',
   animations: [fadeIn, numberBump],
@@ -56,9 +56,6 @@ export class LiveTrackingComponent implements OnInit, OnDestroy {
   readonly reviewComment = signal('');
   readonly submittingReview = signal(false);
 
-  readonly statusLabel = computed(
-    () => QUEUE_STATUS_LABELS[this.entry()?.status ?? 'waiting'],
-  );
   readonly isActive = computed(() => {
     const status = this.entry()?.status;
     return !!status && ACTIVE_QUEUE_STATUSES.includes(status);
@@ -102,7 +99,7 @@ export class LiveTrackingComponent implements OnInit, OnDestroy {
         .on<YourTurnSoonPayload>('your_turn_soon')
         .subscribe((payload) => {
           if (payload.entryId !== this.entryId) return;
-          this.toast.show("You're almost up! Please head to the salon.", 'info');
+          this.toast.show(translate('liveTracking.toastAlmostUp'), 'info');
         }),
     );
   }
@@ -117,7 +114,7 @@ export class LiveTrackingComponent implements OnInit, OnDestroy {
     try {
       await this.queueService.leave(this.entryId);
       this.clearActiveEntryIfMine();
-      this.toast.success('You left the queue');
+      this.toast.success(translate('liveTracking.toastLeftQueue'));
       await this.router.navigate(['/']);
     } catch (error) {
       this.toast.error(extractErrorMessage(error));
@@ -131,7 +128,7 @@ export class LiveTrackingComponent implements OnInit, OnDestroy {
     if (!current) return;
 
     if (this.reviewRating() === 0) {
-      this.toast.error('Select a star rating first');
+      this.toast.error(translate('liveTracking.toastSelectRating'));
       return;
     }
 
@@ -143,7 +140,7 @@ export class LiveTrackingComponent implements OnInit, OnDestroy {
         comment: this.reviewComment().trim() || undefined,
       });
       this.reviewSubmitted.set(true);
-      this.toast.success('Thanks for your feedback!');
+      this.toast.success(translate('liveTracking.toastFeedbackThanks'));
     } catch (error) {
       this.toast.error(extractErrorMessage(error));
     } finally {

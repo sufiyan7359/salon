@@ -29,6 +29,12 @@
   }
 }
 
+.setup-card__lang {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: $space-4;
+}
+
 .setup-card__subtitle {
   color: $color-text-muted;
   font-size: $fs-sm;
@@ -119,6 +125,10 @@ form {
   }
 }
 
+.owner-sidebar > app-language-switcher {
+  margin: $space-2 $space-4 $space-3;
+}
+
 .owner-sidebar__logout {
   background: none;
   border: none;
@@ -163,6 +173,12 @@ form {
   @include desktop-up {
     display: none;
   }
+}
+
+.owner-mobile-header__actions {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
 }
 
 .owner-main {

@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { TranslocoPipe, translate } from '@jsverse/transloco';
 import { QueueEntryWithPosition } from '../../../core/models/queue-entry.model';
 import { SalonService as SalonServiceModel } from '../../../core/models/service.model';
 import { Staff } from '../../../core/models/staff.model';
@@ -14,7 +15,7 @@ import { fadeIn } from '../../../shared/animations/fade-slide.animation';
 
 @Component({
   selector: 'app-live-queue-manager',
-  imports: [FormsModule, SkeletonComponent],
+  imports: [FormsModule, SkeletonComponent, TranslocoPipe],
   templateUrl: './live-queue-manager.component.html',
   styleUrl: './live-queue-manager.component.scss',
   animations: [fadeIn],
@@ -80,7 +81,7 @@ export class LiveQueueManagerComponent implements OnInit, OnDestroy {
     this.actioningId.set(entry.id);
     try {
       await this.queueService.callNext(entry.id);
-      this.toast.success(`Token #${entry.tokenNumber} called`);
+      this.toast.success(translate('ownerQueue.toastTokenCalled', { token: entry.tokenNumber }));
     } catch (error) {
       this.toast.error(extractErrorMessage(error));
     } finally {
@@ -92,7 +93,7 @@ export class LiveQueueManagerComponent implements OnInit, OnDestroy {
     this.actioningId.set(entry.id);
     try {
       await this.queueService.complete(entry.id);
-      this.toast.success(`Token #${entry.tokenNumber} completed`);
+      this.toast.success(translate('ownerQueue.toastTokenCompleted', { token: entry.tokenNumber }));
     } catch (error) {
       this.toast.error(extractErrorMessage(error));
     } finally {
@@ -104,7 +105,7 @@ export class LiveQueueManagerComponent implements OnInit, OnDestroy {
     this.actioningId.set(entry.id);
     try {
       await this.queueService.noShow(entry.id);
-      this.toast.show(`Token #${entry.tokenNumber} marked no-show`, 'info');
+      this.toast.show(translate('ownerQueue.toastTokenNoShow', { token: entry.tokenNumber }), 'info');
     } catch (error) {
       this.toast.error(extractErrorMessage(error));
     } finally {
@@ -116,7 +117,7 @@ export class LiveQueueManagerComponent implements OnInit, OnDestroy {
     this.actioningId.set(entry.id);
     try {
       await this.queueService.leave(entry.id);
-      this.toast.show(`Token #${entry.tokenNumber} removed`, 'info');
+      this.toast.show(translate('ownerQueue.toastTokenRemoved', { token: entry.tokenNumber }), 'info');
     } catch (error) {
       this.toast.error(extractErrorMessage(error));
     } finally {
@@ -138,11 +139,11 @@ export class LiveQueueManagerComponent implements OnInit, OnDestroy {
 
   async submitWalkIn(): Promise<void> {
     if (!this.walkInName().trim() || !this.walkInPhone().trim()) {
-      this.toast.error('Name and phone number are required');
+      this.toast.error(translate('ownerQueue.toastNamePhoneRequired'));
       return;
     }
     if (this.walkInServiceIds().size === 0) {
-      this.toast.error('Select at least one service');
+      this.toast.error(translate('ownerQueue.toastSelectService'));
       return;
     }
 
@@ -154,7 +155,7 @@ export class LiveQueueManagerComponent implements OnInit, OnDestroy {
         serviceIds: [...this.walkInServiceIds()],
         staffId: this.walkInStaffId(),
       });
-      this.toast.success('Walk-in added to the queue');
+      this.toast.success(translate('ownerQueue.toastWalkInAdded'));
       this.walkInName.set('');
       this.walkInPhone.set('');
       this.walkInServiceIds.set(new Set());

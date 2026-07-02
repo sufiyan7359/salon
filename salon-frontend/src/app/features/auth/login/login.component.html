@@ -1,17 +1,20 @@
 <div class="login-card" @fadeIn>
-  <div class="login-card__brand">
-    <span class="login-card__mark">G</span>
-    <span>Glow Salon</span>
+  <div class="login-card__top">
+    <div class="login-card__brand">
+      <span class="login-card__mark">G</span>
+      <span>{{ 'customerLayout.brand' | transloco }}</span>
+    </div>
+    <app-language-switcher />
   </div>
-  <h1>{{ mode() === 'login' ? 'Owner Sign In' : 'Set Up Your Salon Account' }}</h1>
+  <h1>{{ (mode() === 'login' ? 'login.ownerSignIn' : 'login.setupAccountTitle') | transloco }}</h1>
   <p class="login-card__subtitle">
-    {{ mode() === 'login' ? 'Manage your queue, services and staff.' : 'One-time setup for this salon\'s owner account.' }}
+    {{ (mode() === 'login' ? 'login.manageSubtitle' : 'login.oneTimeSetupSubtitle') | transloco }}
   </p>
 
   <form (ngSubmit)="submit()">
     @if (mode() === 'register') {
       <div class="form-field">
-        <label for="name">Your name</label>
+        <label for="name">{{ 'login.yourName' | transloco }}</label>
         <input
           id="name"
           type="text"
@@ -24,7 +27,7 @@
     }
 
     <div class="form-field">
-      <label for="email">Email</label>
+      <label for="email">{{ 'login.email' | transloco }}</label>
       <input
         id="email"
         type="email"
@@ -36,7 +39,7 @@
     </div>
 
     <div class="form-field">
-      <label for="password">Password</label>
+      <label for="password">{{ 'login.password' | transloco }}</label>
       <input
         id="password"
         type="password"
@@ -48,11 +51,11 @@
     </div>
 
     <button type="submit" class="btn btn--primary btn--block" [disabled]="submitting()">
-      {{ submitting() ? 'Please wait...' : mode() === 'login' ? 'Sign In' : 'Create Account' }}
+      {{ submitting() ? ('login.pleaseWait' | transloco) : (mode() === 'login' ? ('login.signIn' | transloco) : ('login.createAccount' | transloco)) }}
     </button>
   </form>
 
   <button type="button" class="login-card__toggle" (click)="toggleMode()">
-    {{ mode() === 'login' ? "First time here? Set up your salon" : 'Already have an account? Sign in' }}
+    {{ (mode() === 'login' ? 'login.firstTimeHere' : 'login.alreadyHaveAccount') | transloco }}
   </button>
 </div>
