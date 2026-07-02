@@ -61,6 +61,12 @@ export class LandingComponent implements OnInit, OnDestroy {
         return;
       }
       this.salon.set(salon);
+      this.socketService.joinSalonRoom(salon.id);
+      this.subscriptions.push(
+        this.socketService
+          .on<QueueEntryWithPosition[]>('queue_updated')
+          .subscribe((updatedLiveQueue) => this.waitingCount.set(updatedLiveQueue.length)),
+      );
 
       const [services, staff, liveQueue, reviews] = await Promise.all([
         this.salonService.getServices(salon.id),
