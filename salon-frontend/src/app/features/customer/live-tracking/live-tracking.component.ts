@@ -7,6 +7,7 @@ import { QueueService } from '../../../core/services/queue.service';
 import { SocketService } from '../../../core/services/socket.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ReviewService } from '../../../core/services/review.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { extractErrorMessage } from '../../../core/utils/http-error.util';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 import { StarRatingComponent } from '../../../shared/components/star-rating/star-rating.component';
@@ -48,6 +49,7 @@ export class LiveTrackingComponent implements OnInit, OnDestroy {
   private readonly socketService = inject(SocketService);
   private readonly toast = inject(ToastService);
   private readonly reviewService = inject(ReviewService);
+  private readonly authService = inject(AuthService);
 
   readonly loading = signal(true);
   readonly entry = signal<QueueEntryWithPosition | null>(null);
@@ -72,6 +74,12 @@ export class LiveTrackingComponent implements OnInit, OnDestroy {
     if (current.status === 'in_service') return 90;
     return Math.min(80, Math.max(8, 80 - current.peopleAhead * 15));
   });
+  // Only the customer who actually owns this entry can review it - an owner
+  // viewing a customer's page (e.g. to check on them) shouldn't see a review
+  // form they're not allowed to submit.
+  readonly canReview = computed(
+    () => this.authService.currentUser()?.id === this.entry()?.customerId,
+  );
 
   private entryId = '';
   private readonly subscriptions: Subscription[] = [];

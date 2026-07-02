@@ -48,7 +48,10 @@ describe('OtpService', () => {
   });
 
   it('rejects verification for an unknown or expired code', async () => {
-    const service = await buildService({}, { findOne: jest.fn().mockResolvedValue(null) });
+    const service = await buildService(
+      {},
+      { findOne: jest.fn().mockResolvedValue(null) },
+    );
     await expect(service.verifyOtp('+910000000000', '000000')).rejects.toThrow(
       UnauthorizedException,
     );

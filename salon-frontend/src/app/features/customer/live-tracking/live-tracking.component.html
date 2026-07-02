@@ -56,7 +56,7 @@
 
       @if (reviewSubmitted()) {
         <p class="tracking__message">Thanks for your feedback!</p>
-      } @else {
+      } @else if (canReview()) {
         <div class="review-card" @fadeIn>
           <p class="review-card__title">Rate your visit</p>
           <app-star-rating

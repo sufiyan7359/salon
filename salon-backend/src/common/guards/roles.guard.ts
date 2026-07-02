@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import { UserRole } from '../../modules/users/entities/user.entity';
@@ -24,6 +29,13 @@ export class RolesGuard implements CanActivate {
       .getRequest<Request & { user?: AuthenticatedUser }>();
     const user = request.user;
 
-    return !!user && requiredRoles.includes(user.role);
+    if (!user || !requiredRoles.includes(user.role)) {
+      throw new ForbiddenException(
+        `This action requires a ${requiredRoles.join(' or ')} account` +
+          (user ? `, but you're signed in as ${user.role}.` : '.'),
+      );
+    }
+
+    return true;
   }
 }
