@@ -49,6 +49,22 @@ describe('OtpService', () => {
     expect(result.devOtp).toBeDefined();
   });
 
+  it('omits devOtp once Twilio is actually live, regardless of NODE_ENV', async () => {
+    const service = await buildService({
+      NODE_ENV: 'development',
+      OTP_PROVIDER: 'twilio',
+      TWILIO_ACCOUNT_SID: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+      TWILIO_AUTH_TOKEN: 'authtokenfake',
+      TWILIO_FROM_NUMBER: '+15005550006',
+    });
+    const smsService = (service as unknown as { smsService: SmsService })
+      .smsService;
+    jest.spyOn(smsService, 'send').mockResolvedValue();
+
+    const result = await service.requestOtp('+910000000000');
+    expect(result.devOtp).toBeUndefined();
+  });
+
   it('rejects verification for an unknown or expired code', async () => {
     const service = await buildService(
       {},

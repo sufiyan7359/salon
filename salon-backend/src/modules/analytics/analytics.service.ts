@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThanOrEqual, Repository } from 'typeorm';
 import { QueueEntry, QueueStatus } from '../queue/entities/queue-entry.entity';
 import { Review } from '../reviews/entities/review.entity';
+import { Booking, BookingStatus } from '../bookings/entities/booking.entity';
 import { SalonsService } from '../salons/salons.service';
 
 const LOOKBACK_DAYS = 90;
@@ -26,6 +27,8 @@ export class AnalyticsService {
     private readonly queueEntryRepository: Repository<QueueEntry>,
     @InjectRepository(Review)
     private readonly reviewsRepository: Repository<Review>,
+    @InjectRepository(Booking)
+    private readonly bookingsRepository: Repository<Booking>,
     private readonly salonsService: SalonsService,
   ) {}
 
@@ -39,36 +42,59 @@ export class AnalyticsService {
     const lookbackStart = new Date();
     lookbackStart.setDate(lookbackStart.getDate() - LOOKBACK_DAYS);
 
-    const [completedEntries, allRecentEntries, reviews] = await Promise.all([
-      this.queueEntryRepository.find({
-        where: {
-          salonId,
-          status: QueueStatus.COMPLETED,
-          joinedAt: MoreThanOrEqual(lookbackStart),
-        },
-        relations: { services: true },
-      }),
-      this.queueEntryRepository.find({
-        where: { salonId, joinedAt: MoreThanOrEqual(lookbackStart) },
-        select: { id: true, joinedAt: true },
-      }),
-      this.reviewsRepository.find({ where: { salonId } }),
-    ]);
+    const [completedEntries, allRecentEntries, reviews, completedBookings] =
+      await Promise.all([
+        this.queueEntryRepository.find({
+          where: {
+            salonId,
+            status: QueueStatus.COMPLETED,
+            joinedAt: MoreThanOrEqual(lookbackStart),
+          },
+          relations: { services: true },
+        }),
+        this.queueEntryRepository.find({
+          where: { salonId, joinedAt: MoreThanOrEqual(lookbackStart) },
+          select: { id: true, joinedAt: true },
+        }),
+        this.reviewsRepository.find({ where: { salonId } }),
+        this.bookingsRepository.find({
+          where: {
+            salonId,
+            status: BookingStatus.COMPLETED,
+            bookingDate: MoreThanOrEqual(this.toDateOnly(lookbackStart)),
+          },
+          relations: { service: true },
+        }),
+      ]);
 
     const todayStart = this.startOfDay(new Date());
     const weekStart = this.daysAgo(7);
     const monthStart = this.daysAgo(30);
 
+    // Queue visits and advance bookings are both "a customer got served" -
+    // combine them so analytics doesn't silently miss booking-only revenue.
     const servedCounts = {
-      today: this.countSince(completedEntries, todayStart),
-      week: this.countSince(completedEntries, weekStart),
-      month: this.countSince(completedEntries, monthStart),
+      today:
+        this.countSince(completedEntries, todayStart) +
+        this.countBookingsSince(completedBookings, todayStart),
+      week:
+        this.countSince(completedEntries, weekStart) +
+        this.countBookingsSince(completedBookings, weekStart),
+      month:
+        this.countSince(completedEntries, monthStart) +
+        this.countBookingsSince(completedBookings, monthStart),
     };
 
     const revenue = {
-      today: this.revenueSince(completedEntries, todayStart),
-      week: this.revenueSince(completedEntries, weekStart),
-      month: this.revenueSince(completedEntries, monthStart),
+      today:
+        this.revenueSince(completedEntries, todayStart) +
+        this.bookingRevenueSince(completedBookings, todayStart),
+      week:
+        this.revenueSince(completedEntries, weekStart) +
+        this.bookingRevenueSince(completedBookings, weekStart),
+      month:
+        this.revenueSince(completedEntries, monthStart) +
+        this.bookingRevenueSince(completedBookings, monthStart),
     };
 
     const avgWaitMinutes = this.averageWaitMinutes(
@@ -95,6 +121,33 @@ export class AnalyticsService {
           sum + entry.services.reduce((s, service) => s + service.price, 0),
         0,
       );
+  }
+
+  private countBookingsSince(bookings: Booking[], since: Date): number {
+    return bookings.filter((booking) => this.isOnOrAfter(booking, since))
+      .length;
+  }
+
+  private bookingRevenueSince(bookings: Booking[], since: Date): number {
+    return bookings
+      .filter((booking) => this.isOnOrAfter(booking, since))
+      .reduce((sum, booking) => sum + booking.service.price, 0);
+  }
+
+  private isOnOrAfter(booking: Booking, since: Date): boolean {
+    // bookingDate is a plain "YYYY-MM-DD" calendar date with no time-of-day
+    // or timezone attached (see bookings.service.ts) - compare it against
+    // `since` as calendar dates too, rather than parsing it as a UTC instant
+    // (new Date('YYYY-MM-DD')), which drifts a day off `since` (computed in
+    // local time) for any timezone that isn't UTC.
+    return booking.bookingDate >= this.toDateOnly(since);
+  }
+
+  private toDateOnly(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   private averageWaitMinutes(entries: QueueEntry[], since: Date): number {

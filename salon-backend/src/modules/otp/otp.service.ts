@@ -58,10 +58,13 @@ export class OtpService {
 
     await this.deliverOtp(phoneNumber, otpCode);
 
-    const isDev = this.configService.get('NODE_ENV') !== 'production';
+    // devOtp is only for local/staging convenience when there's no real SMS
+    // channel to read the code from - never leak it once Twilio is actually
+    // delivering (regardless of NODE_ENV, since staging can run
+    // NODE_ENV=production with Twilio live, or dev can run without Twilio).
     return {
       expiresInMinutes: this.expiresInMinutes,
-      ...(isDev ? { devOtp: otpCode } : {}),
+      ...(this.smsService.isLive ? {} : { devOtp: otpCode }),
     };
   }
 

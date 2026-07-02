@@ -155,13 +155,26 @@ form {
 }
 
 .owner-mobile-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: $space-3;
   padding: $space-4 $space-5;
-  background: $color-surface;
+  background: rgba($color-surface, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid $color-border;
   font-weight: 600;
+
+  span {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 
   button {
     background: none;
@@ -170,6 +183,7 @@ form {
     font-size: $fs-sm;
     font-weight: 600;
     cursor: pointer;
+    white-space: nowrap;
   }
 
   @include desktop-up {
@@ -181,6 +195,7 @@ form {
   display: flex;
   align-items: center;
   gap: $space-3;
+  flex-shrink: 0;
 }
 
 .owner-main {
