@@ -66,15 +66,16 @@ services:
       - key: TWILIO_FROM_NUMBER
         sync: false
 
+  # Render's native "static site" build (npm install/build auto-detected by
+  # Render itself) kept failing with an unexplained, undiagnoseable
+  # "npm error Invalid Version" before our build command ever ran - happened
+  # with every Node version tried and survived a build-cache clear. Switched
+  # to Docker so this repo's own Dockerfile (Node -> Angular build -> nginx)
+  # fully controls the build, sidestepping whatever's broken in Render's
+  # static-site auto-detection.
   - type: web
     name: shadab-yaseen-salon-app
-    runtime: static
+    runtime: docker
+    plan: free
     rootDir: salon-frontend
-    # Static sites build in a production-like environment too, so force
-    # devDependencies (@angular/cli) in the same way as the backend.
-    buildCommand: npm install --include=dev && npm run build
-    staticPublishPath: dist/salon-frontend/browser
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
+    dockerfilePath: ./Dockerfile
