@@ -30,6 +30,13 @@ interface YourTurnSoonPayload {
   peopleAhead: number;
 }
 
+interface WaitAnchor {
+  minutes: number;
+  anchoredAt: number;
+}
+
+const WAIT_TICK_INTERVAL_MS = 15_000;
+
 @Component({
   selector: 'app-live-tracking',
   imports: [SkeletonComponent, StarRatingComponent, FormsModule, TranslocoPipe],
@@ -56,6 +63,12 @@ export class LiveTrackingComponent implements OnInit, OnDestroy {
   readonly reviewComment = signal('');
   readonly submittingReview = signal(false);
 
+  // Ticks down live between backend updates instead of sitting frozen at
+  // whatever estimate was last pushed. Anchored to a timestamp persisted in
+  // localStorage so a page reload continues the countdown rather than
+  // resetting it, as long as the backend's own estimate hasn't changed.
+  readonly displayWaitMinutes = signal<number | null>(null);
+
   readonly isActive = computed(() => {
     const status = this.entry()?.status;
     return !!status && ACTIVE_QUEUE_STATUSES.includes(status);
@@ -76,6 +89,8 @@ export class LiveTrackingComponent implements OnInit, OnDestroy {
 
   private entryId = '';
   private readonly subscriptions: Subscription[] = [];
+  private waitAnchor: WaitAnchor | null = null;
+  private waitTickTimer?: ReturnType<typeof setInterval>;
 
   async ngOnInit(): Promise<void> {
     this.entryId = this.route.snapshot.paramMap.get('entryId') ?? '';
@@ -102,11 +117,14 @@ export class LiveTrackingComponent implements OnInit, OnDestroy {
           this.toast.show(translate('liveTracking.toastAlmostUp'), 'info');
         }),
     );
+
+    this.waitTickTimer = setInterval(() => this.tickWaitCountdown(), WAIT_TICK_INTERVAL_MS);
   }
 
   ngOnDestroy(): void {
     this.socketService.leaveQueueRoom(this.entryId);
     this.subscriptions.forEach((sub) => sub.unsubscribe());
+    if (this.waitTickTimer) clearInterval(this.waitTickTimer);
   }
 
   async leaveQueue(): Promise<void> {
@@ -114,6 +132,7 @@ export class LiveTrackingComponent implements OnInit, OnDestroy {
     try {
       await this.queueService.leave(this.entryId);
       this.clearActiveEntryIfMine();
+      localStorage.removeItem(this.anchorStorageKey());
       this.toast.success(translate('liveTracking.toastLeftQueue'));
       await this.router.navigate(['/']);
     } catch (error) {
@@ -154,6 +173,7 @@ export class LiveTrackingComponent implements OnInit, OnDestroy {
       this.entry.set(entry);
       this.socketService.joinSalonRoom(entry.salonId);
       this.syncActiveEntryTracking(entry.status);
+      this.setWaitAnchor(entry.estimatedWaitMinutes);
     } catch (error) {
       this.notFound.set(true);
       this.toast.error(extractErrorMessage(error));
@@ -176,6 +196,50 @@ export class LiveTrackingComponent implements OnInit, OnDestroy {
         : current,
     );
     this.syncActiveEntryTracking(payload.status);
+    this.setWaitAnchor(payload.estimatedWaitMinutes);
+  }
+
+  private anchorStorageKey(): string {
+    return `salon_wait_anchor_${this.entryId}`;
+  }
+
+  private setWaitAnchor(minutes: number | null): void {
+    if (minutes === null || !this.isActive()) {
+      this.waitAnchor = null;
+      this.displayWaitMinutes.set(minutes);
+      localStorage.removeItem(this.anchorStorageKey());
+      return;
+    }
+
+    // If the backend's estimate hasn't actually changed, keep the original
+    // anchor timestamp (including one restored from before a reload) so the
+    // countdown keeps ticking from real elapsed time instead of jumping back
+    // up to the full value. A different value means the queue genuinely
+    // moved, so re-anchor to now.
+    const stored = this.waitAnchor ?? this.readWaitAnchor();
+    if (stored && stored.minutes === minutes) {
+      this.waitAnchor = stored;
+    } else {
+      this.waitAnchor = { minutes, anchoredAt: Date.now() };
+      localStorage.setItem(this.anchorStorageKey(), JSON.stringify(this.waitAnchor));
+    }
+    this.tickWaitCountdown();
+  }
+
+  private readWaitAnchor(): WaitAnchor | null {
+    const raw = localStorage.getItem(this.anchorStorageKey());
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as WaitAnchor;
+    } catch {
+      return null;
+    }
+  }
+
+  private tickWaitCountdown(): void {
+    if (!this.waitAnchor) return;
+    const elapsedMinutes = (Date.now() - this.waitAnchor.anchoredAt) / 60_000;
+    this.displayWaitMinutes.set(Math.max(0, Math.round(this.waitAnchor.minutes - elapsedMinutes)));
   }
 
   // Keeps the "active queue entry" tracked in localStorage (used by the

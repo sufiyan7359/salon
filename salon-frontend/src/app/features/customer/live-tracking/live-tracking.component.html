@@ -37,8 +37,8 @@
           <span class="stat__label">{{ 'liveTracking.peopleAheadLabel' | transloco }}</span>
         </div>
         <div class="stat">
-          <span class="stat__value" [@numberBump]="e.estimatedWaitMinutes ?? 0">
-            {{ e.estimatedWaitMinutes ?? 0 }}
+          <span class="stat__value" [@numberBump]="displayWaitMinutes() ?? 0">
+            {{ displayWaitMinutes() ?? 0 }}
           </span>
           <span class="stat__label">{{ 'liveTracking.estMinutesLabel' | transloco }}</span>
         </div>
