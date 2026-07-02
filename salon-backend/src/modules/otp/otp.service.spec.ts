@@ -5,6 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
 import { OtpService } from './otp.service';
 import { OtpVerification } from './entities/otp-verification.entity';
+import { SmsService } from '../../common/sms/sms.service';
 
 function configWith(values: Record<string, string | undefined>) {
   return { get: jest.fn((key: string) => values[key]) };
@@ -27,6 +28,7 @@ async function buildService(
         },
       },
       { provide: ConfigService, useValue: configWith(config) },
+      SmsService,
     ],
   }).compile();
 

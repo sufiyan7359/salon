@@ -2,9 +2,11 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Interval } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, MoreThanOrEqual, Repository } from 'typeorm';
 import { QueueEntry, QueueStatus } from './entities/queue-entry.entity';
@@ -16,6 +18,7 @@ import { ServicesService } from '../services/services.service';
 import { UsersService } from '../users/users.service';
 import { UserRole } from '../users/entities/user.entity';
 import type { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
+import { SmsService } from '../../common/sms/sms.service';
 
 const DEFAULT_AVG_DURATION_MINUTES = 15;
 const ACTIVE_STATUSES = [
@@ -23,6 +26,9 @@ const ACTIVE_STATUSES = [
   QueueStatus.NEXT,
   QueueStatus.IN_SERVICE,
 ];
+const WAITING_STATUSES = [QueueStatus.WAITING, QueueStatus.NEXT];
+const REMINDER_THRESHOLD_MINUTES = 10;
+const REMINDER_CHECK_INTERVAL_MS = 60_000;
 
 export interface QueueEntryWithPosition extends QueueEntry {
   position: number;
@@ -31,6 +37,8 @@ export interface QueueEntryWithPosition extends QueueEntry {
 
 @Injectable()
 export class QueueService {
+  private readonly logger = new Logger(QueueService.name);
+
   constructor(
     @InjectRepository(QueueEntry)
     private readonly queueRepository: Repository<QueueEntry>,
@@ -38,6 +46,7 @@ export class QueueService {
     private readonly servicesService: ServicesService,
     private readonly usersService: UsersService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly smsService: SmsService,
   ) {}
 
   async join(customerId: string, dto: JoinQueueDto): Promise<QueueEntry> {
@@ -91,6 +100,65 @@ export class QueueService {
     });
 
     return this.annotate(entries);
+  }
+
+  // Runs every minute rather than piggybacking on queue-change events, since
+  // the estimated wait is purely positional (peopleAhead * avgDuration) and
+  // doesn't shrink on its own as time passes - a customer can cross the
+  // 10-minute threshold just by waiting, with no join/call-next/complete
+  // event to trigger off of.
+  @Interval(REMINDER_CHECK_INTERVAL_MS)
+  async sendUpcomingTurnReminders(): Promise<void> {
+    const candidates = await this.queueRepository
+      .createQueryBuilder('entry')
+      .select('DISTINCT entry.salonId', 'salonId')
+      .where('entry.status IN (:...statuses)', { statuses: WAITING_STATUSES })
+      .andWhere('entry.reminderSentAt IS NULL')
+      .getRawMany<{ salonId: string }>();
+
+    for (const { salonId } of candidates) {
+      await this.sendUpcomingTurnRemindersForSalon(salonId);
+    }
+  }
+
+  private async sendUpcomingTurnRemindersForSalon(
+    salonId: string,
+  ): Promise<void> {
+    const activeQueue = await this.queueRepository.find({
+      where: { salonId, status: In(ACTIVE_STATUSES) },
+      relations: { services: true, staff: true, customer: true },
+      order: { joinedAt: 'ASC' },
+    });
+
+    const due = this.annotate(activeQueue).filter(
+      (entry) =>
+        !entry.reminderSentAt &&
+        WAITING_STATUSES.includes(entry.status) &&
+        entry.estimatedWaitMinutes !== null &&
+        entry.estimatedWaitMinutes <= REMINDER_THRESHOLD_MINUTES &&
+        !!entry.customer?.phoneNumber,
+    );
+    if (due.length === 0) return;
+
+    const salon = await this.salonsService.findByIdOrThrow(salonId);
+
+    for (const entry of due) {
+      if (!entry.customer.phoneNumber) continue;
+      try {
+        await this.smsService.send(
+          entry.customer.phoneNumber,
+          `Your turn at ${salon.name} is coming up in about ${entry.estimatedWaitMinutes} min. Please head to the salon now!`,
+        );
+        await this.queueRepository.update(entry.id, {
+          reminderSentAt: new Date(),
+        });
+      } catch (error) {
+        this.logger.error(
+          `Failed to send turn-reminder SMS for queue entry ${entry.id}`,
+          error instanceof Error ? error.stack : String(error),
+        );
+      }
+    }
   }
 
   async getStatus(

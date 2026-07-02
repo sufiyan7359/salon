@@ -73,4 +73,7 @@ export class QueueEntry {
 
   @Column({ type: 'int', nullable: true })
   estimatedWaitMinutes: number | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  reminderSentAt: Date | null;
 }

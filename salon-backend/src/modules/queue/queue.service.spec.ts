@@ -14,19 +14,26 @@ import { ServicesService } from '../services/services.service';
 import { UsersService } from '../users/users.service';
 import { UserRole } from '../users/entities/user.entity';
 import type { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
+import { SmsService } from '../../common/sms/sms.service';
 
 describe('QueueService', () => {
   let service: QueueService;
   let queueRepository: jest.Mocked<Repository<QueueEntry>>;
   let salonsService: jest.Mocked<SalonsService>;
+  let smsService: jest.Mocked<SmsService>;
 
-  const salon = { id: 'salon-1', ownerId: 'owner-1' } as any;
+  const salon = {
+    id: 'salon-1',
+    ownerId: 'owner-1',
+    name: 'Glow Salon',
+  } as any;
 
   function makeEntry(overrides: Partial<QueueEntry> = {}): QueueEntry {
     return {
       id: 'entry-1',
       salonId: 'salon-1',
       customerId: 'customer-1',
+      customer: { phoneNumber: '+910000000001' } as any,
       staffId: null,
       services: [{ durationMinutes: 30 } as any],
       tokenNumber: 1,
@@ -35,6 +42,7 @@ describe('QueueService', () => {
       calledAt: null,
       completedAt: null,
       estimatedWaitMinutes: null,
+      reminderSentAt: null,
       ...overrides,
     } as QueueEntry;
   }
@@ -51,6 +59,8 @@ describe('QueueService', () => {
             find: jest.fn(),
             findOne: jest.fn(),
             count: jest.fn(),
+            update: jest.fn().mockResolvedValue(undefined),
+            createQueryBuilder: jest.fn(),
           },
         },
         {
@@ -68,12 +78,17 @@ describe('QueueService', () => {
         },
         { provide: UsersService, useValue: {} },
         { provide: EventEmitter2, useValue: { emit: jest.fn() } },
+        {
+          provide: SmsService,
+          useValue: { send: jest.fn().mockResolvedValue(undefined) },
+        },
       ],
     }).compile();
 
     service = module.get(QueueService);
     queueRepository = module.get(getRepositoryToken(QueueEntry));
     salonsService = module.get(SalonsService);
+    smsService = module.get(SmsService);
   });
 
   describe('callNext', () => {
@@ -250,6 +265,98 @@ describe('QueueService', () => {
           'salon-1',
         ),
       ).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe('sendUpcomingTurnReminders', () => {
+    function mockCandidateSalons(salonIds: string[]): void {
+      queueRepository.createQueryBuilder.mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        getRawMany: jest
+          .fn()
+          .mockResolvedValue(salonIds.map((salonId) => ({ salonId }))),
+      } as any);
+    }
+
+    it('texts and marks entries whose estimated wait has dropped to the threshold', async () => {
+      mockCandidateSalons(['salon-1']);
+      const entry = makeEntry({
+        id: 'e1',
+        status: QueueStatus.WAITING,
+        services: [{ durationMinutes: 5 } as any],
+      });
+      queueRepository.find.mockResolvedValue([entry]);
+
+      await service.sendUpcomingTurnReminders();
+
+      expect(smsService.send).toHaveBeenCalledWith(
+        '+910000000001',
+        expect.stringContaining('Glow Salon'),
+      );
+      expect(queueRepository.update).toHaveBeenCalledWith('e1', {
+        reminderSentAt: expect.any(Date),
+      });
+    });
+
+    it('does not text an entry whose estimated wait is still above the threshold', async () => {
+      mockCandidateSalons(['salon-1']);
+      const near = makeEntry({
+        id: 'e1',
+        services: [{ durationMinutes: 5 } as any],
+      });
+      const far = makeEntry({
+        id: 'e2',
+        services: [{ durationMinutes: 60 } as any],
+      });
+      queueRepository.find.mockResolvedValue([near, far]);
+
+      await service.sendUpcomingTurnReminders();
+
+      expect(smsService.send).toHaveBeenCalledTimes(1);
+      expect(smsService.send).not.toHaveBeenCalledWith(
+        expect.anything(),
+        expect.stringContaining('e2'),
+      );
+    });
+
+    it('does not re-text an entry that already has a reminder sent', async () => {
+      mockCandidateSalons(['salon-1']);
+      const entry = makeEntry({
+        id: 'e1',
+        services: [{ durationMinutes: 5 } as any],
+        reminderSentAt: new Date(),
+      });
+      queueRepository.find.mockResolvedValue([entry]);
+
+      await service.sendUpcomingTurnReminders();
+
+      expect(smsService.send).not.toHaveBeenCalled();
+    });
+
+    it('skips entries with no phone number on file instead of throwing', async () => {
+      mockCandidateSalons(['salon-1']);
+      const entry = makeEntry({
+        id: 'e1',
+        services: [{ durationMinutes: 5 } as any],
+        customer: { phoneNumber: null } as any,
+      });
+      queueRepository.find.mockResolvedValue([entry]);
+
+      await expect(
+        service.sendUpcomingTurnReminders(),
+      ).resolves.toBeUndefined();
+      expect(smsService.send).not.toHaveBeenCalled();
+    });
+
+    it('does nothing when no salons have due candidates', async () => {
+      mockCandidateSalons([]);
+
+      await service.sendUpcomingTurnReminders();
+
+      expect(queueRepository.find).not.toHaveBeenCalled();
+      expect(smsService.send).not.toHaveBeenCalled();
     });
   });
 });

@@ -4,11 +4,13 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import databaseConfig from './config/database.config';
 import jwtConfig from './config/jwt.config';
 import { validate } from './config/env.validation';
+import { SmsModule } from './common/sms/sms.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { OtpModule } from './modules/otp/otp.module';
@@ -35,6 +37,8 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     }),
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 30 }]),
     EventEmitterModule.forRoot(),
+    ScheduleModule.forRoot(),
+    SmsModule,
     AuthModule,
     UsersModule,
     OtpModule,
