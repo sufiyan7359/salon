@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
@@ -7,6 +8,7 @@ import {
   IsUUID,
   MinLength,
 } from 'class-validator';
+import { normalizeIndianPhoneNumber } from '../../../common/utils/phone.util';
 
 export class WalkInQueueDto {
   @IsArray()
@@ -22,8 +24,9 @@ export class WalkInQueueDto {
   @MinLength(2)
   customerName!: string;
 
-  @IsPhoneNumber(undefined, {
-    message: 'customerPhone must be a valid phone number in E.164 format',
+  @Transform(({ value }) => normalizeIndianPhoneNumber(value))
+  @IsPhoneNumber('IN', {
+    message: 'customerPhone must be a valid Indian mobile number',
   })
   customerPhone!: string;
 }

@@ -1,8 +1,11 @@
+import { Transform } from 'class-transformer';
 import { IsOptional, IsPhoneNumber, IsString, Length } from 'class-validator';
+import { normalizeIndianPhoneNumber } from '../../../common/utils/phone.util';
 
 export class VerifyOtpDto {
-  @IsPhoneNumber(undefined, {
-    message: 'phoneNumber must be a valid phone number in E.164 format',
+  @Transform(({ value }) => normalizeIndianPhoneNumber(value))
+  @IsPhoneNumber('IN', {
+    message: 'phoneNumber must be a valid Indian mobile number',
   })
   phoneNumber!: string;
 
