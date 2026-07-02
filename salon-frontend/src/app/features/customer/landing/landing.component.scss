@@ -21,6 +21,62 @@
   padding: $space-5;
 }
 
+.my-entry-banner {
+  display: flex;
+  align-items: center;
+  gap: $space-4;
+  margin: $space-5 $space-5 0;
+  padding: $space-4 $space-5;
+  border-radius: $radius-lg;
+  background: $color-primary;
+  color: $color-text-inverse;
+  text-decoration: none;
+  box-shadow: $shadow-glow;
+  @include press-scale;
+}
+
+.my-entry-banner__token {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-right: $space-4;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.my-entry-banner__token-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+}
+
+.my-entry-banner__token-number {
+  font-family: $font-display;
+  font-size: $fs-xl;
+  font-weight: 700;
+}
+
+.my-entry-banner__info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.my-entry-banner__status {
+  font-weight: 600;
+}
+
+.my-entry-banner__detail {
+  font-size: $fs-xs;
+  opacity: 0.8;
+}
+
+.my-entry-banner__arrow {
+  font-size: $fs-lg;
+  opacity: 0.8;
+}
+
 .hero {
   position: relative;
 }

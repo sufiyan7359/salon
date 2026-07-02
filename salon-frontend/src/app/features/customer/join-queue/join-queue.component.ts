@@ -170,6 +170,7 @@ export class JoinQueueComponent implements OnInit, OnDestroy {
         serviceIds: [...this.selectedServiceIds()],
         staffId: this.selectedStaffId(),
       });
+      this.queueService.setActiveEntry(entry.id);
       this.joinSuccess.set(true);
       await new Promise((resolve) => setTimeout(resolve, SUCCESS_DISPLAY_MS));
       await this.router.navigate(['/queue', entry.id]);

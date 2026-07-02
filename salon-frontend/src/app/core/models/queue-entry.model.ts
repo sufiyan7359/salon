@@ -30,3 +30,14 @@ export interface QueueEntryWithPosition extends QueueEntry {
   position: number;
   peopleAhead: number;
 }
+
+export const ACTIVE_QUEUE_STATUSES: QueueStatus[] = ['waiting', 'next', 'in_service'];
+
+export const QUEUE_STATUS_LABELS: Record<QueueStatus, string> = {
+  waiting: 'Waiting',
+  next: 'Up Next',
+  in_service: 'In Service',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+  no_show: 'You were marked no-show',
+};

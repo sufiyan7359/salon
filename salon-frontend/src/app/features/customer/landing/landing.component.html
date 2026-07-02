@@ -11,6 +11,26 @@
     <p>Check back soon &mdash; the salon owner is still setting things up.</p>
   </div>
 } @else if (salon(); as s) {
+  @if (myEntry(); as entry) {
+    <a [routerLink]="['/queue', entry.id]" class="my-entry-banner" @fadeIn>
+      <div class="my-entry-banner__token">
+        <span class="my-entry-banner__token-label">Token</span>
+        <span class="my-entry-banner__token-number" [@numberBump]="entry.tokenNumber">{{ entry.tokenNumber }}</span>
+      </div>
+      <div class="my-entry-banner__info">
+        <span class="my-entry-banner__status">{{ myEntryStatusLabel() }}</span>
+        @if (entry.status === 'waiting' || entry.status === 'next') {
+          <span class="my-entry-banner__detail">
+            {{ entry.peopleAhead }} ahead &middot; ~{{ entry.estimatedWaitMinutes ?? 0 }} min
+          </span>
+        } @else if (entry.status === 'in_service') {
+          <span class="my-entry-banner__detail">You're up now!</span>
+        }
+      </div>
+      <span class="my-entry-banner__arrow">&rarr;</span>
+    </a>
+  }
+
   <section class="hero" @fadeIn>
     <div class="hero__cover">
       @if (s.coverImage) {

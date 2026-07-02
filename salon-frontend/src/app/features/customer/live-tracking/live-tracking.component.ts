@@ -2,7 +2,11 @@ import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
-import { QueueEntryWithPosition } from '../../../core/models/queue-entry.model';
+import {
+  ACTIVE_QUEUE_STATUSES,
+  QUEUE_STATUS_LABELS,
+  QueueEntryWithPosition,
+} from '../../../core/models/queue-entry.model';
 import { QueueService } from '../../../core/services/queue.service';
 import { SocketService } from '../../../core/services/socket.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -25,15 +29,6 @@ interface YourTurnSoonPayload {
   entryId: string;
   peopleAhead: number;
 }
-
-const STATUS_LABELS: Record<QueueEntryWithPosition['status'], string> = {
-  waiting: 'Waiting',
-  next: 'Up Next',
-  in_service: 'In Service',
-  completed: 'Completed',
-  cancelled: 'Cancelled',
-  no_show: "You were marked no-show",
-};
 
 @Component({
   selector: 'app-live-tracking',
@@ -62,11 +57,12 @@ export class LiveTrackingComponent implements OnInit, OnDestroy {
   readonly submittingReview = signal(false);
 
   readonly statusLabel = computed(
-    () => STATUS_LABELS[this.entry()?.status ?? 'waiting'],
+    () => QUEUE_STATUS_LABELS[this.entry()?.status ?? 'waiting'],
   );
-  readonly isActive = computed(() =>
-    ['waiting', 'next', 'in_service'].includes(this.entry()?.status ?? ''),
-  );
+  readonly isActive = computed(() => {
+    const status = this.entry()?.status;
+    return !!status && ACTIVE_QUEUE_STATUSES.includes(status);
+  });
   readonly progressPercent = computed(() => {
     const current = this.entry();
     if (!current) return 0;
@@ -120,6 +116,7 @@ export class LiveTrackingComponent implements OnInit, OnDestroy {
     this.leaving.set(true);
     try {
       await this.queueService.leave(this.entryId);
+      this.clearActiveEntryIfMine();
       this.toast.success('You left the queue');
       await this.router.navigate(['/']);
     } catch (error) {
@@ -159,6 +156,7 @@ export class LiveTrackingComponent implements OnInit, OnDestroy {
       const entry = await this.queueService.getMyStatus(this.entryId);
       this.entry.set(entry);
       this.socketService.joinSalonRoom(entry.salonId);
+      this.syncActiveEntryTracking(entry.status);
     } catch (error) {
       this.notFound.set(true);
       this.toast.error(extractErrorMessage(error));
@@ -180,5 +178,23 @@ export class LiveTrackingComponent implements OnInit, OnDestroy {
           }
         : current,
     );
+    this.syncActiveEntryTracking(payload.status);
+  }
+
+  // Keeps the "active queue entry" tracked in localStorage (used by the
+  // landing page banner) in sync with this entry's real status.
+  private syncActiveEntryTracking(status: QueueEntryWithPosition['status']): void {
+    const isActive = ACTIVE_QUEUE_STATUSES.includes(status);
+    if (isActive) {
+      this.queueService.setActiveEntry(this.entryId);
+    } else {
+      this.clearActiveEntryIfMine();
+    }
+  }
+
+  private clearActiveEntryIfMine(): void {
+    if (this.queueService.getActiveEntryId() === this.entryId) {
+      this.queueService.clearActiveEntry();
+    }
   }
 }

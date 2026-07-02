@@ -17,9 +17,26 @@ export interface WalkInPayload {
   customerPhone: string;
 }
 
+const ACTIVE_ENTRY_KEY = 'salon_active_queue_entry';
+
 @Injectable({ providedIn: 'root' })
 export class QueueService {
   constructor(private readonly http: HttpClient) {}
+
+  // Tracks the customer's own in-progress queue ticket across page loads/
+  // navigation (e.g. so the home page can still show "your token" if they
+  // wander back to it instead of staying on the live-tracking screen).
+  setActiveEntry(entryId: string): void {
+    localStorage.setItem(ACTIVE_ENTRY_KEY, entryId);
+  }
+
+  getActiveEntryId(): string | null {
+    return localStorage.getItem(ACTIVE_ENTRY_KEY);
+  }
+
+  clearActiveEntry(): void {
+    localStorage.removeItem(ACTIVE_ENTRY_KEY);
+  }
 
   join(payload: JoinQueuePayload) {
     return firstValueFrom(
