@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   Logger,
@@ -55,6 +56,21 @@ export class QueueService {
       dto.salonId,
       dto.serviceIds,
     );
+
+    const existing = await this.queueRepository.findOne({
+      where: {
+        salonId: dto.salonId,
+        customerId,
+        status: In(ACTIVE_STATUSES),
+      },
+    });
+    if (existing) {
+      throw new ConflictException({
+        message: `This customer already has an active queue entry (token #${existing.tokenNumber}).`,
+        entryId: existing.id,
+        tokenNumber: existing.tokenNumber,
+      });
+    }
 
     const tokenNumber = await this.nextTokenNumber(dto.salonId);
 

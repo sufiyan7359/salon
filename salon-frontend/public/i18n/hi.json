@@ -88,7 +88,8 @@
     "toastMobileRequired": "पहले अपना मोबाइल नंबर डालें",
     "toastOtpSent": "आपके फोन पर OTP भेज दिया गया है",
     "toastCodeRequired": "हमने जो कोड भेजा है वो डालें",
-    "toastSelectService": "आगे बढ़ने के लिए कम से कम एक सर्विस चुनें"
+    "toastSelectService": "आगे बढ़ने के लिए कम से कम एक सर्विस चुनें",
+    "toastAlreadyInQueue": "आप पहले से ही क्यू में हैं - यह रहा आपका टोकन"
   },
   "booking": {
     "title": "अपॉइंटमेंट बुक करें",

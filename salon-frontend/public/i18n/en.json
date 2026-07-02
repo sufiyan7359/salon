@@ -88,7 +88,8 @@
     "toastMobileRequired": "Enter your mobile number first",
     "toastOtpSent": "OTP sent to your phone",
     "toastCodeRequired": "Enter the code we sent you",
-    "toastSelectService": "Select at least one service to continue"
+    "toastSelectService": "Select at least one service to continue",
+    "toastAlreadyInQueue": "You're already in the queue - here's your ticket"
   },
   "booking": {
     "title": "Book an appointment",

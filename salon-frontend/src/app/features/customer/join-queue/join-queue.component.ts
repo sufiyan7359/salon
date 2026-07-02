@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -176,10 +177,29 @@ export class JoinQueueComponent implements OnInit, OnDestroy {
       await new Promise((resolve) => setTimeout(resolve, SUCCESS_DISPLAY_MS));
       await this.router.navigate(['/queue', entry.id]);
     } catch (error) {
+      const existingEntryId = this.extractExistingEntryId(error);
+      if (existingEntryId) {
+        this.queueService.setActiveEntry(existingEntryId);
+        this.toast.show(translate('joinQueue.toastAlreadyInQueue'), 'info');
+        await this.router.navigate(['/queue', existingEntryId]);
+        return;
+      }
       this.toast.error(extractErrorMessage(error));
     } finally {
       this.joining.set(false);
     }
+  }
+
+  // Backend rejects a second active entry for the same customer+salon with a
+  // 409 that carries the existing entryId - redirect there instead of just
+  // showing an error, since from the customer's side this isn't a mistake,
+  // it's "I already have a ticket".
+  private extractExistingEntryId(error: unknown): string | null {
+    if (error instanceof HttpErrorResponse && error.status === 409) {
+      const entryId = (error.error as { entryId?: string } | null)?.entryId;
+      return typeof entryId === 'string' ? entryId : null;
+    }
+    return null;
   }
 
   private startResendCooldown(): void {

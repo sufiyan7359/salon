@@ -21,6 +21,7 @@ describe('QueueService', () => {
   let queueRepository: jest.Mocked<Repository<QueueEntry>>;
   let salonsService: jest.Mocked<SalonsService>;
   let smsService: jest.Mocked<SmsService>;
+  let servicesService: jest.Mocked<ServicesService>;
 
   const salon = {
     id: 'salon-1',
@@ -89,6 +90,7 @@ describe('QueueService', () => {
     queueRepository = module.get(getRepositoryToken(QueueEntry));
     salonsService = module.get(SalonsService);
     smsService = module.get(SmsService);
+    servicesService = module.get(ServicesService);
   });
 
   describe('callNext', () => {
@@ -247,6 +249,45 @@ describe('QueueService', () => {
       queueRepository.find.mockResolvedValue([]);
       const result = await service.getLiveQueue('salon-1');
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('join', () => {
+    it('creates a new entry when the customer has no active entry yet', async () => {
+      const services = [{ id: 's1', durationMinutes: 20 } as any];
+      servicesService.findActiveByIdsForSalon.mockResolvedValue(services);
+      // findOne is used twice: the pre-create duplicate check, then
+      // findByIdOrThrow re-fetching the saved entry with relations.
+      queueRepository.findOne
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(makeEntry({ services }));
+      queueRepository.count.mockResolvedValue(2);
+
+      const result = await service.join('customer-1', {
+        salonId: 'salon-1',
+        serviceIds: ['s1'],
+      });
+
+      expect(queueRepository.save).toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
+
+    it('rejects with a ConflictException carrying the existing entryId when the customer is already active', async () => {
+      const existing = makeEntry({ id: 'entry-existing', tokenNumber: 7 });
+      servicesService.findActiveByIdsForSalon.mockResolvedValue([
+        { id: 's1', durationMinutes: 20 } as any,
+      ]);
+      queueRepository.findOne.mockResolvedValue(existing);
+
+      await expect(
+        service.join('customer-1', { salonId: 'salon-1', serviceIds: ['s1'] }),
+      ).rejects.toMatchObject({
+        response: expect.objectContaining({
+          entryId: 'entry-existing',
+          tokenNumber: 7,
+        }),
+      });
+      expect(queueRepository.save).not.toHaveBeenCalled();
     });
   });
 
