@@ -2,18 +2,20 @@
 FROM node:24-alpine AS build
 WORKDIR /app
 
-# `npm ci` against this exact package.json/package-lock.json has failed
-# with a bare "npm error Invalid Version" on Render's build infrastructure
-# (both their native static-site pipeline and a from-scratch Docker build) -
-# but succeeds locally with npm 11.13.0 AND npm 11.18.0 against the same
-# lockfile, so it isn't simply a version mismatch. Pin the npm version
-# anyway (cheap, doesn't hurt) and, if it still fails, print npm's own
-# debug log so the real error (not just the truncated summary) shows up in
-# the build output.
-RUN npm install -g npm@11.13.0
-
+# Root cause found via the verbose npm log: package-lock.json was generated
+# on macOS ARM64 and bakes in platform-specific optional-dependency
+# resolutions (lmdb, rollup native binaries) for that platform. `npm ci`
+# trusts the lockfile's exact resolution tree as-is, which is a known npm
+# bug on cross-platform installs (npm/cli#4828) - it crashed comparing
+# @lmdb/lmdb-darwin-arm64's version here, and separately (when optional
+# deps were skipped entirely to work around that) failed at runtime unable
+# to find @rollup/rollup-darwin-arm64, because that one actually IS needed
+# for the *current* platform, just under a different platform-specific
+# package name. `npm install` re-resolves optional platform packages
+# against whatever platform it's actually running on instead of trusting
+# the lockfile blindly, which is the documented fix for this class of bug.
 COPY package*.json ./
-RUN npm ci --loglevel verbose || (cat /root/.npm/_logs/*-debug-0.log; exit 1)
+RUN npm install
 
 COPY . .
 RUN npm run build
