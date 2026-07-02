@@ -94,7 +94,7 @@ export class OtpService {
     try {
       await this.smsService.send(
         phoneNumber,
-        `Your Glow Salon verification code is ${otpCode}. It expires in ${this.expiresInMinutes} minutes.`,
+        `Your Shadab Yaseen Hair Salon verification code is ${otpCode}. It expires in ${this.expiresInMinutes} minutes.`,
       );
     } catch (error) {
       this.logger.error(
