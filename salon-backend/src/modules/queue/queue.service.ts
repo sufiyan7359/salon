@@ -9,8 +9,9 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, MoreThanOrEqual, Repository } from 'typeorm';
+import { EntityManager, In, MoreThanOrEqual, Repository } from 'typeorm';
 import { QueueEntry, QueueStatus } from './entities/queue-entry.entity';
+import { Salon } from '../salons/entities/salon.entity';
 import { JoinQueueDto } from './dto/join-queue.dto';
 import { WalkInQueueDto } from './dto/walk-in-queue.dto';
 import { CallNextDto } from './dto/call-next.dto';
@@ -58,33 +59,51 @@ export class QueueService {
       dto.serviceIds,
     );
 
-    const existing = await this.queueRepository.findOne({
-      where: {
-        salonId: dto.salonId,
-        customerId,
-        status: In(ACTIVE_STATUSES),
+    // The duplicate-entry check and token-number count-then-insert both need
+    // to see a consistent, serialized view per salon - otherwise two joins
+    // arriving at nearly the same instant for the same salon could each
+    // compute the same "next" token number, or both slip past the duplicate
+    // check before either has saved. Locking the Salon row for the
+    // transaction's duration serializes concurrent joins for that salon
+    // (joins for other salons are unaffected) without needing a separate
+    // lock table.
+    const saved = await this.queueRepository.manager.transaction(
+      async (manager) => {
+        await manager.findOne(Salon, {
+          where: { id: dto.salonId },
+          lock: { mode: 'pessimistic_write' },
+        });
+
+        const existing = await manager.findOne(QueueEntry, {
+          where: {
+            salonId: dto.salonId,
+            customerId,
+            status: In(ACTIVE_STATUSES),
+          },
+        });
+        if (existing) {
+          throw new ConflictException({
+            message: `This customer already has an active queue entry (token #${existing.tokenNumber}).`,
+            entryId: existing.id,
+            tokenNumber: existing.tokenNumber,
+          });
+        }
+
+        const tokenNumber = await this.nextTokenNumber(manager, dto.salonId);
+
+        const entry = manager.create(QueueEntry, {
+          salonId: dto.salonId,
+          customerId,
+          staffId: dto.staffId ?? null,
+          services,
+          tokenNumber,
+          status: QueueStatus.WAITING,
+        });
+
+        return manager.save(entry);
       },
-    });
-    if (existing) {
-      throw new ConflictException({
-        message: `This customer already has an active queue entry (token #${existing.tokenNumber}).`,
-        entryId: existing.id,
-        tokenNumber: existing.tokenNumber,
-      });
-    }
+    );
 
-    const tokenNumber = await this.nextTokenNumber(dto.salonId);
-
-    const entry = this.queueRepository.create({
-      salonId: dto.salonId,
-      customerId,
-      staffId: dto.staffId ?? null,
-      services,
-      tokenNumber,
-      status: QueueStatus.WAITING,
-    });
-
-    const saved = await this.queueRepository.save(entry);
     this.emitQueueUpdated(dto.salonId, saved.id);
     return this.findByIdOrThrow(saved.id);
   }
@@ -336,8 +355,11 @@ export class QueueService {
     }
   }
 
-  private async nextTokenNumber(salonId: string): Promise<number> {
-    const countToday = await this.queueRepository.count({
+  private async nextTokenNumber(
+    manager: EntityManager,
+    salonId: string,
+  ): Promise<number> {
+    const countToday = await manager.count(QueueEntry, {
       where: { salonId, joinedAt: MoreThanOrEqual(startOfIstDay()) },
     });
 

@@ -9,6 +9,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
 import { QueueService } from './queue.service';
 import { QueueEntry, QueueStatus } from './entities/queue-entry.entity';
+import { Salon } from '../salons/entities/salon.entity';
 import { SalonsService } from '../salons/salons.service';
 import { ServicesService } from '../services/services.service';
 import { UsersService } from '../users/users.service';
@@ -62,6 +63,28 @@ describe('QueueService', () => {
             count: jest.fn(),
             update: jest.fn().mockResolvedValue(undefined),
             createQueryBuilder: jest.fn(),
+            // join() runs inside manager.transaction() to lock the Salon row
+            // for the duration of the duplicate-check + token-count + insert.
+            // The fake manager forwards everything except the Salon lock
+            // itself back to this same repository mock, so existing
+            // `queueRepository.findOne`/`.count`/`.save` assertions keep
+            // working unchanged.
+            get manager() {
+              return {
+                transaction: (cb: (manager: unknown) => unknown) =>
+                  cb({
+                    findOne: (entity: unknown, opts: unknown) =>
+                      entity === Salon
+                        ? Promise.resolve({ id: 'salon-1' })
+                        : (this.findOne as jest.Mock)(opts),
+                    count: (_entity: unknown, opts: unknown) =>
+                      (this.count as jest.Mock)(opts),
+                    create: (_entity: unknown, data: unknown) =>
+                      (this.create as jest.Mock)(data),
+                    save: (data: unknown) => (this.save as jest.Mock)(data),
+                  }),
+              };
+            },
           },
         },
         {
