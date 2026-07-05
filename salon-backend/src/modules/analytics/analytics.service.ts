@@ -5,6 +5,7 @@ import { QueueEntry, QueueStatus } from '../queue/entities/queue-entry.entity';
 import { Review } from '../reviews/entities/review.entity';
 import { Booking, BookingStatus } from '../bookings/entities/booking.entity';
 import { SalonsService } from '../salons/salons.service';
+import { istDateOnly, istHour, startOfIstDay } from '../../common/utils/ist-time.util';
 
 const LOOKBACK_DAYS = 90;
 
@@ -61,13 +62,13 @@ export class AnalyticsService {
           where: {
             salonId,
             status: BookingStatus.COMPLETED,
-            bookingDate: MoreThanOrEqual(this.toDateOnly(lookbackStart)),
+            bookingDate: MoreThanOrEqual(istDateOnly(lookbackStart)),
           },
           relations: { service: true },
         }),
       ]);
 
-    const todayStart = this.startOfDay(new Date());
+    const todayStart = startOfIstDay();
     const weekStart = this.daysAgo(7);
     const monthStart = this.daysAgo(30);
 
@@ -135,19 +136,13 @@ export class AnalyticsService {
   }
 
   private isOnOrAfter(booking: Booking, since: Date): boolean {
-    // bookingDate is a plain "YYYY-MM-DD" calendar date with no time-of-day
-    // or timezone attached (see bookings.service.ts) - compare it against
-    // `since` as calendar dates too, rather than parsing it as a UTC instant
-    // (new Date('YYYY-MM-DD')), which drifts a day off `since` (computed in
-    // local time) for any timezone that isn't UTC.
-    return booking.bookingDate >= this.toDateOnly(since);
-  }
-
-  private toDateOnly(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    // bookingDate is a plain "YYYY-MM-DD" IST calendar date with no
+    // time-of-day or timezone attached (see bookings.service.ts) - compare
+    // it against `since` as an IST calendar date too, rather than parsing it
+    // as a UTC instant (new Date('YYYY-MM-DD')) or using the server's local
+    // calendar date, either of which drifts a day off `since` unless the
+    // server happens to run in IST.
+    return booking.bookingDate >= istDateOnly(since);
   }
 
   private averageWaitMinutes(entries: QueueEntry[], since: Date): number {
@@ -169,7 +164,7 @@ export class AnalyticsService {
   ): { hour: number; count: number }[] {
     const counts = new Array(24).fill(0) as number[];
     for (const entry of entries) {
-      counts[entry.joinedAt.getHours()] += 1;
+      counts[istHour(entry.joinedAt)] += 1;
     }
     return counts.map((count, hour) => ({ hour, count }));
   }
@@ -196,12 +191,6 @@ export class AnalyticsService {
           ) / 10;
 
     return { average, count, breakdown };
-  }
-
-  private startOfDay(date: Date): Date {
-    const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
-    return d;
   }
 
   private daysAgo(days: number): Date {

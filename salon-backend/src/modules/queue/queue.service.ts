@@ -20,6 +20,7 @@ import { UsersService } from '../users/users.service';
 import { UserRole } from '../users/entities/user.entity';
 import type { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
 import { SmsService } from '../../common/sms/sms.service';
+import { startOfIstDay } from '../../common/utils/ist-time.util';
 
 const DEFAULT_AVG_DURATION_MINUTES = 15;
 const ACTIVE_STATUSES = [
@@ -336,11 +337,8 @@ export class QueueService {
   }
 
   private async nextTokenNumber(salonId: string): Promise<number> {
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
-
     const countToday = await this.queueRepository.count({
-      where: { salonId, joinedAt: MoreThanOrEqual(startOfDay) },
+      where: { salonId, joinedAt: MoreThanOrEqual(startOfIstDay()) },
     });
 
     return countToday + 1;

@@ -13,6 +13,7 @@ import { ServicesService } from '../services/services.service';
 import { StaffService } from '../staff/staff.service';
 import { UserRole } from '../users/entities/user.entity';
 import type { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
+import { parseIstDateTime } from '../../common/utils/ist-time.util';
 
 const OWNER_ALLOWED_TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {
   [BookingStatus.PENDING]: [BookingStatus.CONFIRMED, BookingStatus.CANCELLED],
@@ -32,7 +33,7 @@ export class BookingsService {
   ) {}
 
   async create(customerId: string, dto: CreateBookingDto): Promise<Booking> {
-    if (new Date(`${dto.bookingDate}T${dto.bookingTime}`) < new Date()) {
+    if (parseIstDateTime(dto.bookingDate, dto.bookingTime) < new Date()) {
       throw new BadRequestException('Cannot book a date/time in the past');
     }
 
