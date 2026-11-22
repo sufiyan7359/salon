@@ -43,7 +43,17 @@ export class QueueController {
 
   @Get(':salonId/live')
   getLiveQueue(@Param('salonId') salonId: string) {
-    return this.queueService.getLiveQueue(salonId);
+    return this.queueService.getPublicLiveQueue(salonId);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.OWNER)
+  @Get(':salonId/manage')
+  getManagedQueue(
+    @Param('salonId') salonId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.queueService.getManagedQueue(salonId, user.userId);
   }
 
   @UseGuards(JwtAuthGuard)

@@ -58,12 +58,20 @@ export class ReviewsService {
     return saved;
   }
 
-  findBySalon(salonId: string) {
-    return this.reviewsRepository.find({
+  // Public endpoint - expose only the reviewer's display name, never their
+  // phone number/email.
+  async findBySalon(salonId: string) {
+    const reviews = await this.reviewsRepository.find({
       where: { salonId },
       relations: { customer: true },
       order: { createdAt: 'DESC' },
     });
+    return reviews.map((review) => ({
+      ...review,
+      customer: review.customer
+        ? { id: review.customer.id, name: review.customer.name }
+        : null,
+    }));
   }
 
   private async hasCompletedVisit(

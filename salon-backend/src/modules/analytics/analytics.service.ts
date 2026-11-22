@@ -5,7 +5,11 @@ import { QueueEntry, QueueStatus } from '../queue/entities/queue-entry.entity';
 import { Review } from '../reviews/entities/review.entity';
 import { Booking, BookingStatus } from '../bookings/entities/booking.entity';
 import { SalonsService } from '../salons/salons.service';
-import { istDateOnly, istHour, startOfIstDay } from '../../common/utils/ist-time.util';
+import {
+  istDateOnly,
+  istHour,
+  startOfIstDay,
+} from '../../common/utils/ist-time.util';
 
 const LOOKBACK_DAYS = 90;
 

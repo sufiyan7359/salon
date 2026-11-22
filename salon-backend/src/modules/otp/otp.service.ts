@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
+import { randomInt } from 'crypto';
 import { MoreThan, Repository } from 'typeorm';
 import { OtpVerification } from './entities/otp-verification.entity';
 import { SmsService } from '../../common/sms/sms.service';
@@ -69,12 +70,19 @@ export class OtpService {
   }
 
   async verifyOtp(phoneNumber: string, otpCode: string): Promise<void> {
+    // Only the most recently issued code counts - older still-unexpired
+    // codes for the same number must not stay guessable alongside it.
     const entry = await this.otpRepository.findOne({
-      where: { phoneNumber, otpCode, isVerified: false },
+      where: { phoneNumber },
       order: { createdAt: 'DESC' },
     });
 
-    if (!entry || entry.expiresAt < new Date()) {
+    if (
+      !entry ||
+      entry.isVerified ||
+      entry.otpCode !== otpCode ||
+      entry.expiresAt < new Date()
+    ) {
       throw new UnauthorizedException('Invalid or expired OTP');
     }
 
@@ -83,11 +91,10 @@ export class OtpService {
   }
 
   private generateOtpCode(): string {
-    const max = 10 ** this.otpLength;
-    const code = Math.floor(Math.random() * max)
+    // crypto.randomInt, not Math.random - OTPs are a security boundary.
+    return randomInt(0, 10 ** this.otpLength)
       .toString()
       .padStart(this.otpLength, '0');
-    return code;
   }
 
   private async deliverOtp(

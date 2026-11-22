@@ -50,7 +50,13 @@ export class BookingComponent implements OnInit {
   readonly bookingTime = signal('');
   readonly submitting = signal(false);
 
-  readonly todayIso = new Date().toISOString().split('T')[0];
+  // Local calendar date (the customer's phone is in IST) - toISOString()
+  // would give the UTC date, i.e. yesterday between 00:00 and 05:30 IST.
+  readonly todayIso = (() => {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  })();
 
   private cooldownTimer?: ReturnType<typeof setInterval>;
 

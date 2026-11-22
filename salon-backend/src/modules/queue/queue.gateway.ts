@@ -8,7 +8,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { QueueService } from './queue.service';
+import { QueueService, toPublicQueueEntry } from './queue.service';
 
 const YOUR_TURN_SOON_THRESHOLD = 3;
 
@@ -60,7 +60,12 @@ export class QueueGateway {
   }) {
     try {
       const liveQueue = await this.queueService.getLiveQueue(salonId);
-      this.server.to(this.salonRoom(salonId)).emit('queue_updated', liveQueue);
+      // Anyone can join a salon room, so only the public (no phone/email)
+      // shape goes out here - the owner dashboard refetches full details
+      // via the authenticated /queue/:salonId/manage on this event.
+      this.server
+        .to(this.salonRoom(salonId))
+        .emit('queue_updated', liveQueue.map(toPublicQueueEntry));
 
       for (const entry of liveQueue) {
         this.server.to(this.entryRoom(entry.id)).emit('status_changed', {

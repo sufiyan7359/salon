@@ -18,7 +18,7 @@ import { CallNextDto } from './dto/call-next.dto';
 import { SalonsService } from '../salons/salons.service';
 import { ServicesService } from '../services/services.service';
 import { UsersService } from '../users/users.service';
-import { UserRole } from '../users/entities/user.entity';
+import { User, UserRole } from '../users/entities/user.entity';
 import type { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
 import { SmsService } from '../../common/sms/sms.service';
 import { startOfIstDay } from '../../common/utils/ist-time.util';
@@ -36,6 +36,21 @@ const REMINDER_CHECK_INTERVAL_MS = 60_000;
 export interface QueueEntryWithPosition extends QueueEntry {
   position: number;
   peopleAhead: number;
+}
+
+// The live queue is readable by anyone (landing page, socket salon room) -
+// strip customers down to their display name so the public feed never
+// leaks phone numbers/emails. The owner dashboard reads the full version
+// through the authenticated getManagedQueue() instead.
+export function toPublicQueueEntry(
+  entry: QueueEntryWithPosition,
+): QueueEntryWithPosition {
+  return {
+    ...entry,
+    customer: entry.customer
+      ? ({ id: entry.customer.id, name: entry.customer.name } as User)
+      : entry.customer,
+  };
 }
 
 @Injectable()
@@ -125,6 +140,20 @@ export class QueueService {
       serviceIds: dto.serviceIds,
       staffId: dto.staffId,
     });
+  }
+
+  async getPublicLiveQueue(salonId: string): Promise<QueueEntryWithPosition[]> {
+    const entries = await this.getLiveQueue(salonId);
+    return entries.map(toPublicQueueEntry);
+  }
+
+  async getManagedQueue(
+    salonId: string,
+    ownerId: string,
+  ): Promise<QueueEntryWithPosition[]> {
+    const salon = await this.salonsService.findByIdOrThrow(salonId);
+    this.salonsService.assertOwnership(salon, ownerId);
+    return this.getLiveQueue(salonId);
   }
 
   async getLiveQueue(salonId: string): Promise<QueueEntryWithPosition[]> {

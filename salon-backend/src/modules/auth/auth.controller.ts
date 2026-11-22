@@ -20,6 +20,9 @@ export class AuthController {
     return this.authService.sendOtp(dto);
   }
 
+  // A 6-digit code is only 1M possibilities - cap guesses per IP well below
+  // the global 30/min limit.
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('verify-otp')
   verifyOtp(@Body() dto: VerifyOtpDto) {
     return this.authService.verifyOtpAndLogin(dto);
@@ -30,6 +33,7 @@ export class AuthController {
     return this.authService.registerOwner(dto);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('owner/login')
   ownerLogin(@Body() dto: OwnerLoginDto) {
     return this.authService.ownerLogin(dto);

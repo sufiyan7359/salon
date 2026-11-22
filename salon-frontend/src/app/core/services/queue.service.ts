@@ -52,6 +52,15 @@ export class QueueService {
     );
   }
 
+  // Owner-only: same list as getLiveQueue but with customer phone numbers.
+  getManagedQueue(salonId: string) {
+    return firstValueFrom(
+      this.http.get<QueueEntryWithPosition[]>(
+        `${environment.apiUrl}/queue/${salonId}/manage`,
+      ),
+    );
+  }
+
   getMyStatus(entryId: string) {
     return firstValueFrom(
       this.http.get<QueueEntryWithPosition>(

@@ -63,7 +63,7 @@ export class LiveQueueManagerComponent implements OnInit, OnDestroy {
 
     try {
       const [entries, staff, services] = await Promise.all([
-        this.queueService.getLiveQueue(this.salonId),
+        this.queueService.getManagedQueue(this.salonId),
         this.salonService.getStaff(this.salonId),
         this.salonService.getServices(this.salonId),
       ]);
@@ -78,7 +78,9 @@ export class LiveQueueManagerComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.socketService
         .on<QueueEntryWithPosition[]>('queue_updated')
-        .subscribe((list) => this.entries.set(list)),
+        // The broadcast is the public shape (no phone numbers) - use it as
+        // a signal and refetch the owner view with full customer details.
+        .subscribe(() => void this.refreshEntries()),
     );
 
     this.subscriptions.push(
@@ -99,6 +101,14 @@ export class LiveQueueManagerComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
+  }
+
+  private async refreshEntries(): Promise<void> {
+    try {
+      this.entries.set(await this.queueService.getManagedQueue(this.salonId));
+    } catch (error) {
+      this.toast.error(extractErrorMessage(error));
+    }
   }
 
   async callNext(entry: QueueEntryWithPosition): Promise<void> {
