@@ -101,6 +101,7 @@
     "staffLabel": "पसंदीदा स्टाफ (वैकल्पिक)",
     "dateLabel": "तारीख",
     "timeLabel": "समय",
+    "hoursHint": "खुला {{opening}} – {{closing}}. पूरी सर्विस बंद होने से पहले ख़त्म होनी चाहिए।",
     "requestBooking": "बुकिंग रिक्वेस्ट करें",
     "requesting": "बुक हो रहा है...",
     "yourBookingsTitle": "आपकी बुकिंग्स",

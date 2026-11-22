@@ -86,6 +86,11 @@
     color: $color-danger;
     font-size: $fs-xs;
   }
+
+  .form-field__hint {
+    color: $color-text-muted;
+    font-size: $fs-xs;
+  }
 }
 
 // Shared admin-page layout (owner dashboard: queue/services/staff managers)

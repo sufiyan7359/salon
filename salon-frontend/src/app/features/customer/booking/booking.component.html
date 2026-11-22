@@ -107,9 +107,16 @@
               <input
                 id="time"
                 type="time"
+                [min]="salon()?.openingTime ?? ''"
+                [max]="salon()?.closingTime ?? ''"
                 [ngModel]="bookingTime()"
                 (ngModelChange)="bookingTime.set($event)"
               />
+              @if (salon()?.openingTime && salon()?.closingTime) {
+                <small class="form-field__hint">
+                  {{ 'booking.hoursHint' | transloco: { opening: salon()?.openingTime, closing: salon()?.closingTime } }}
+                </small>
+              }
             </div>
           </div>
 

@@ -101,6 +101,7 @@
     "staffLabel": "Preferred staff (optional)",
     "dateLabel": "Date",
     "timeLabel": "Time",
+    "hoursHint": "Open {{opening}} – {{closing}}. The whole service must finish before closing.",
     "requestBooking": "Request Booking",
     "requesting": "Booking...",
     "yourBookingsTitle": "Your Bookings",

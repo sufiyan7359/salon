@@ -13,8 +13,18 @@ import type { AuthenticatedUser } from '../auth/interfaces/authenticated-user.in
 describe('BookingsService', () => {
   let service: BookingsService;
   let bookingsRepository: jest.Mocked<Repository<Booking>>;
+  let staffService: jest.Mocked<StaffService>;
+  // Stands in for the transaction's EntityManager - `find` returns the
+  // staff member's existing same-day bookings for the overlap check.
+  const manager = {
+    findOne: jest.fn(),
+    find: jest.fn(),
+    create: jest.fn((_entity: unknown, v: unknown) => v),
+    save: jest.fn((v: unknown) => Promise.resolve(v)),
+  };
 
-  const salon = { id: 'salon-1', ownerId: 'owner-1' } as any;
+  let salon: any;
+  const haircut = { id: 'service-1', durationMinutes: 30 };
   const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     .toISOString()
     .split('T')[0];
@@ -48,6 +58,13 @@ describe('BookingsService', () => {
   };
 
   beforeEach(async () => {
+    salon = {
+      id: 'salon-1',
+      ownerId: 'owner-1',
+      openingTime: '09:00',
+      closingTime: '20:00',
+    };
+    manager.find.mockReset().mockResolvedValue([]);
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BookingsService,
@@ -58,19 +75,24 @@ describe('BookingsService', () => {
             save: jest.fn((v) => Promise.resolve(v)),
             find: jest.fn(),
             findOne: jest.fn(),
+            manager: {
+              transaction: jest.fn((cb: (m: typeof manager) => unknown) =>
+                cb(manager),
+              ),
+            },
           },
         },
         {
           provide: SalonsService,
           useValue: {
-            findByIdOrThrow: jest.fn().mockResolvedValue(salon),
+            findByIdOrThrow: jest.fn(() => Promise.resolve(salon)),
             assertOwnership: jest.fn(),
           },
         },
         {
           provide: ServicesService,
           useValue: {
-            findActiveByIdsForSalon: jest.fn().mockResolvedValue([]),
+            findActiveByIdsForSalon: jest.fn().mockResolvedValue([haircut]),
           },
         },
         {
@@ -82,7 +104,31 @@ describe('BookingsService', () => {
 
     service = module.get(BookingsService);
     bookingsRepository = module.get(getRepositoryToken(Booking));
+    staffService = module.get(StaffService);
+    staffService.findByIdOrThrow.mockResolvedValue({
+      id: 'staff-1',
+      salonId: 'salon-1',
+      isAvailable: true,
+    } as any);
   });
+
+  function bookAt(bookingTime: string, staffId?: string) {
+    return service.create('customer-2', {
+      salonId: 'salon-1',
+      serviceId: 'service-1',
+      staffId,
+      bookingDate: futureDate,
+      bookingTime,
+    });
+  }
+
+  function existingStaffBooking(bookingTime: string, durationMinutes: number) {
+    return makeBooking({
+      staffId: 'staff-1',
+      bookingTime,
+      service: { durationMinutes } as any,
+    });
+  }
 
   describe('create', () => {
     it('rejects a booking in the past', async () => {
@@ -97,36 +143,76 @@ describe('BookingsService', () => {
     });
 
     it('rejects double-booking the same staff at the same date/time', async () => {
-      const staffService = service['staffService'] as jest.Mocked<StaffService>;
+      manager.find.mockResolvedValue([existingStaffBooking('14:00', 30)]);
+      await expect(bookAt('14:00', 'staff-1')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('rejects a booking that starts inside an existing longer booking', async () => {
+      // Existing 14:00 booking runs 60 min (until 15:00); 14:30 overlaps.
+      manager.find.mockResolvedValue([existingStaffBooking('14:00', 60)]);
+      await expect(bookAt('14:30', 'staff-1')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('rejects a booking whose duration runs into the next booking', async () => {
+      // New 30-min booking at 13:45 would run until 14:15.
+      manager.find.mockResolvedValue([existingStaffBooking('14:00', 30)]);
+      await expect(bookAt('13:45', 'staff-1')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('allows a back-to-back booking right after the previous one ends', async () => {
+      manager.find.mockResolvedValue([existingStaffBooking('14:00', 30)]);
+      const result = await bookAt('14:30', 'staff-1');
+      expect(result.status).toBe(BookingStatus.PENDING);
+    });
+
+    it('locks the staff row before checking for overlaps', async () => {
+      await bookAt('14:00', 'staff-1');
+      expect(manager.findOne).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ lock: { mode: 'pessimistic_write' } }),
+      );
+    });
+
+    it('rejects booking a staff member who is marked unavailable', async () => {
       staffService.findByIdOrThrow.mockResolvedValue({
         id: 'staff-1',
         salonId: 'salon-1',
+        isAvailable: false,
       } as any);
-      bookingsRepository.findOne.mockResolvedValue(
-        makeBooking({ staffId: 'staff-1' }),
+      await expect(bookAt('14:00', 'staff-1')).rejects.toThrow(
+        BadRequestException,
       );
+    });
 
-      await expect(
-        service.create('customer-2', {
-          salonId: 'salon-1',
-          serviceId: 'service-1',
-          staffId: 'staff-1',
-          bookingDate: futureDate,
-          bookingTime: '14:00',
-        }),
-      ).rejects.toThrow(BadRequestException);
+    it('rejects a booking before the salon opens', async () => {
+      await expect(bookAt('08:30')).rejects.toThrow(BadRequestException);
+    });
+
+    it('rejects a booking whose service would run past closing time', async () => {
+      // 30-min service at 19:45 ends 20:15, after the 20:00 close.
+      await expect(bookAt('19:45')).rejects.toThrow(BadRequestException);
+    });
+
+    it('allows a booking that ends exactly at closing time', async () => {
+      const result = await bookAt('19:30');
+      expect(result.status).toBe(BookingStatus.PENDING);
+    });
+
+    it('skips the hours check when the salon has no hours set', async () => {
+      salon.openingTime = null;
+      salon.closingTime = null;
+      const result = await bookAt('07:00');
+      expect(result.status).toBe(BookingStatus.PENDING);
     });
 
     it('creates a pending booking when there is no conflict', async () => {
-      bookingsRepository.findOne.mockResolvedValue(null);
-
-      const result = await service.create('customer-1', {
-        salonId: 'salon-1',
-        serviceId: 'service-1',
-        bookingDate: futureDate,
-        bookingTime: '14:00',
-      });
-
+      const result = await bookAt('14:00');
       expect(result.status).toBe(BookingStatus.PENDING);
     });
   });
