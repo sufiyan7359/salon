@@ -30,7 +30,7 @@
 
     <span class="status-badge" [class]="e.status">{{ 'queueStatus.' + e.status | transloco }}</span>
 
-    @if (isActive()) {
+    @if (isActive() && e.status !== 'in_service') {
       <div class="stats-row">
         <div class="stat">
           <span class="stat__value" [@numberBump]="e.peopleAhead">{{ e.peopleAhead }}</span>

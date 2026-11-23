@@ -96,4 +96,18 @@ describe('AnalyticsService', () => {
     expect(summary.servedCounts.week).toBe(0);
     expect(summary.revenue.month).toBe(0);
   });
+
+  it('does not count future-dated bookings in today/week/month', async () => {
+    const future = new Date();
+    future.setDate(future.getDate() + 2);
+    (bookingsRepository.find as jest.Mock).mockResolvedValue([
+      makeBooking({ bookingDate: localDateOnly(future) }),
+    ]);
+
+    const summary = await service.getSummary('salon-1', 'owner-1');
+
+    expect(summary.servedCounts.today).toBe(0);
+    expect(summary.revenue.week).toBe(0);
+    expect(summary.revenue.month).toBe(0);
+  });
 });

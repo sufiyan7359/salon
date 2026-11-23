@@ -395,6 +395,12 @@ export class QueueService {
     return countToday + 1;
   }
 
+  // Customers already in the chair come first with nobody ahead and no wait -
+  // the owner can call someone out of join order (e.g. they asked for a
+  // specific stylist), and ordering purely by joinedAt then told an
+  // in-service customer "7 people ahead, 140 min". Everyone still waiting
+  // counts the in-service customers as ahead of them, then each other in
+  // join order.
   private annotate(entries: QueueEntry[]): QueueEntryWithPosition[] {
     const durations = entries.map((entry) =>
       entry.services.reduce((sum, service) => sum + service.durationMinutes, 0),
@@ -404,14 +410,32 @@ export class QueueService {
         ? durations.reduce((sum, d) => sum + d, 0) / durations.length
         : DEFAULT_AVG_DURATION_MINUTES;
 
-    return entries.map((entry, index) => ({
-      ...entry,
-      position: index + 1,
-      peopleAhead: index,
-      estimatedWaitMinutes: Math.round(
-        index * (avgDuration || DEFAULT_AVG_DURATION_MINUTES),
-      ),
-    }));
+    const inService = entries.filter(
+      (entry) => entry.status === QueueStatus.IN_SERVICE,
+    );
+    const waiting = entries.filter(
+      (entry) => entry.status !== QueueStatus.IN_SERVICE,
+    );
+
+    return [
+      ...inService.map((entry, index) => ({
+        ...entry,
+        position: index + 1,
+        peopleAhead: 0,
+        estimatedWaitMinutes: 0,
+      })),
+      ...waiting.map((entry, index) => {
+        const peopleAhead = inService.length + index;
+        return {
+          ...entry,
+          position: peopleAhead + 1,
+          peopleAhead,
+          estimatedWaitMinutes: Math.round(
+            peopleAhead * (avgDuration || DEFAULT_AVG_DURATION_MINUTES),
+          ),
+        };
+      }),
+    ];
   }
 
   private emitQueueUpdated(salonId: string, entryId: string): void {

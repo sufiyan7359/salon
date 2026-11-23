@@ -146,7 +146,14 @@ export class AnalyticsService {
     // as a UTC instant (new Date('YYYY-MM-DD')) or using the server's local
     // calendar date, either of which drifts a day off `since` unless the
     // server happens to run in IST.
-    return booking.bookingDate >= istDateOnly(since);
+    //
+    // Also capped at today: an owner can mark a future-dated booking
+    // completed (e.g. the customer came in early), and without an upper
+    // bound it would land in "today"/"this week" revenue days ahead of time.
+    return (
+      booking.bookingDate >= istDateOnly(since) &&
+      booking.bookingDate <= istDateOnly(new Date())
+    );
   }
 
   private averageWaitMinutes(entries: QueueEntry[], since: Date): number {

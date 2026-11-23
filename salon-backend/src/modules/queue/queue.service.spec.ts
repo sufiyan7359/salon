@@ -268,6 +268,33 @@ describe('QueueService', () => {
       expect(result[2].estimatedWaitMinutes).toBe(60);
     });
 
+    it('puts in-service customers first with nobody ahead, even if called out of join order', async () => {
+      const t = Date.now();
+      const entries = [
+        makeEntry({ id: 'w1', joinedAt: new Date(t) }),
+        makeEntry({ id: 'w2', joinedAt: new Date(t + 1000) }),
+        makeEntry({
+          id: 'served',
+          status: QueueStatus.IN_SERVICE,
+          joinedAt: new Date(t + 2000),
+        }),
+        makeEntry({ id: 'w3', joinedAt: new Date(t + 3000) }),
+      ];
+      queueRepository.find.mockResolvedValue(entries);
+
+      const result = await service.getLiveQueue('salon-1');
+
+      expect(result.map((r) => r.id)).toEqual(['served', 'w1', 'w2', 'w3']);
+      const served = result.find((r) => r.id === 'served')!;
+      expect(served.peopleAhead).toBe(0);
+      expect(served.estimatedWaitMinutes).toBe(0);
+      // waiting customers count the one in the chair as ahead of them
+      expect(
+        result.filter((r) => r.id !== 'served').map((r) => r.peopleAhead),
+      ).toEqual([1, 2, 3]);
+      expect(result.map((r) => r.position)).toEqual([1, 2, 3, 4]);
+    });
+
     it('returns an empty list with no error when the salon has no active entries', async () => {
       queueRepository.find.mockResolvedValue([]);
       const result = await service.getLiveQueue('salon-1');
