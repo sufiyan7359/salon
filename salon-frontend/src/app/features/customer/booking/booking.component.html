@@ -1,0 +1,155 @@
+@if (loading()) {
+  <div class="join-skeleton">
+    <app-skeleton height="2rem" width="50%" />
+    <app-skeleton height="120px" radius="1rem" />
+  </div>
+} @else {
+  @if (step() === 'phone') {
+    <div class="step" @fadeSlide>
+      <h1>{{ 'booking.title' | transloco }}</h1>
+      <p class="step__subtitle">{{ 'booking.mobileSubtitle' | transloco }}</p>
+      <div class="form-field">
+        <label for="phone">{{ 'joinQueue.mobileLabel' | transloco }}</label>
+        <input
+          id="phone"
+          type="tel"
+          placeholder="98765 43210"
+          [ngModel]="phoneNumber()"
+          (ngModelChange)="phoneNumber.set($event)"
+          (keyup.enter)="sendOtp()"
+        />
+      </div>
+      <button type="button" class="btn btn--primary btn--block" [disabled]="sendingOtp()" (click)="sendOtp()">
+        {{ (sendingOtp() ? 'joinQueue.sending' : 'joinQueue.sendOtp') | transloco }}
+      </button>
+    </div>
+  }
+
+  @if (step() === 'otp') {
+    <div class="step" @fadeSlide>
+      <h1>{{ 'joinQueue.enterCodeTitle' | transloco }}</h1>
+      <p class="step__subtitle">{{ 'joinQueue.sentTo' | transloco: { phone: phoneNumber() } }}</p>
+      @if (devOtpHint()) {
+        <p class="dev-hint">{{ 'joinQueue.devModeHint' | transloco }} <strong>{{ devOtpHint() }}</strong></p>
+      }
+      <div class="form-field">
+        <label for="otp">{{ 'joinQueue.codeLabel' | transloco }}</label>
+        <input
+          id="otp"
+          type="text"
+          inputmode="numeric"
+          maxlength="6"
+          [ngModel]="otpCode()"
+          (ngModelChange)="otpCode.set($event)"
+          (keyup.enter)="verifyOtp()"
+        />
+      </div>
+      <button type="button" class="btn btn--primary btn--block" [disabled]="verifying()" (click)="verifyOtp()">
+        {{ (verifying() ? 'joinQueue.verifying' : 'joinQueue.verifyContinue') | transloco }}
+      </button>
+      <button
+        type="button"
+        class="btn btn--ghost btn--block"
+        [disabled]="resendCooldown() > 0 || sendingOtp()"
+        (click)="sendOtp()"
+      >
+        {{ resendCooldown() > 0 ? ('joinQueue.resendIn' | transloco: { seconds: resendCooldown() }) : ('joinQueue.resendOtp' | transloco) }}
+      </button>
+    </div>
+  }
+
+  @if (step() === 'book') {
+    <div class="step" @fadeIn>
+      <h1>{{ 'booking.title' | transloco }}</h1>
+
+      @if (services().length === 0) {
+        <div class="empty-state">
+          <h2>{{ 'booking.noBookableTitle' | transloco }}</h2>
+          <p>{{ 'booking.noBookableSubtitle' | transloco }}</p>
+        </div>
+      } @else {
+        <div class="entity-form">
+          <div class="form-field">
+            <label for="service">{{ 'booking.serviceLabel' | transloco }}</label>
+            <select id="service" [ngModel]="selectedServiceId()" (ngModelChange)="selectedServiceId.set($event)">
+              <option value="" disabled>{{ 'booking.chooseService' | transloco }}</option>
+              @for (service of services(); track service.id) {
+                <option [value]="service.id">{{ service.name }} &middot; {{ service.durationMinutes }}min &middot; ₹{{ service.price }}</option>
+              }
+            </select>
+          </div>
+
+          @if (staff().length > 0) {
+            <div class="form-field">
+              <label for="staff">{{ 'booking.staffLabel' | transloco }}</label>
+              <select id="staff" [ngModel]="selectedStaffId()" (ngModelChange)="selectedStaffId.set($event)">
+                <option [value]="undefined">{{ 'common.noPreference' | transloco }}</option>
+                @for (member of staff(); track member.id) {
+                  <option [value]="member.id">{{ member.name }}</option>
+                }
+              </select>
+            </div>
+          }
+
+          <div class="entity-form__row">
+            <div class="form-field">
+              <label for="date">{{ 'booking.dateLabel' | transloco }}</label>
+              <input
+                id="date"
+                type="date"
+                [min]="todayIso"
+                [ngModel]="bookingDate()"
+                (ngModelChange)="bookingDate.set($event)"
+              />
+            </div>
+            <div class="form-field">
+              <label for="time">{{ 'booking.timeLabel' | transloco }}</label>
+              <input
+                id="time"
+                type="time"
+                [min]="salon()?.openingTime ?? ''"
+                [max]="salon()?.closingTime ?? ''"
+                [ngModel]="bookingTime()"
+                (ngModelChange)="bookingTime.set($event)"
+              />
+              @if (salon()?.openingTime && salon()?.closingTime) {
+                <small class="form-field__hint">
+                  {{ 'booking.hoursHint' | transloco: { opening: salon()?.openingTime, closing: salon()?.closingTime } }}
+                </small>
+              }
+            </div>
+          </div>
+
+          <button type="button" class="btn btn--primary btn--block" [disabled]="submitting()" (click)="submitBooking()">
+            {{ (submitting() ? 'booking.requesting' : 'booking.requestBooking') | transloco }}
+          </button>
+        </div>
+      }
+
+      @if (myBookings().length > 0) {
+        <h2 class="section-label">{{ 'booking.yourBookingsTitle' | transloco }}</h2>
+        <div class="entity-list">
+          @for (booking of myBookings(); track booking.id) {
+            <div class="entity-card">
+              <div class="entity-card__info">
+                <span class="entity-card__name">{{ booking.service.name }}</span>
+                <span class="entity-card__meta">
+                  {{ booking.bookingDate }} {{ 'common.at' | transloco }} {{ booking.bookingTime }}
+                  @if (booking.staff) { &middot; {{ 'common.with' | transloco }} {{ booking.staff.name }} }
+                </span>
+              </div>
+              <div class="entity-card__actions">
+                <span class="pill" [class]="'pill--' + (booking.status === 'cancelled' ? 'danger' : booking.status === 'completed' ? 'success' : booking.status === 'confirmed' ? 'success' : 'warning')">
+                  {{ 'bookingStatus.' + booking.status | transloco }}
+                </span>
+                @if (isCancellable(booking)) {
+                  <button type="button" class="btn btn--ghost btn--sm" (click)="cancelBooking(booking)">{{ 'booking.cancel' | transloco }}</button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+}

@@ -1,0 +1,18 @@
+<div class="lang-switch" role="group" aria-label="Language">
+  <button
+    type="button"
+    class="lang-switch__option"
+    [class.active]="languageService.current() === 'en'"
+    (click)="select('en')"
+  >
+    EN
+  </button>
+  <button
+    type="button"
+    class="lang-switch__option"
+    [class.active]="languageService.current() === 'hi'"
+    (click)="select('hi')"
+  >
+    हि
+  </button>
+</div>

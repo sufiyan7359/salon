@@ -1,0 +1,90 @@
+<div class="page">
+  <div class="page__header">
+    <h1>{{ 'ownerServices.title' | transloco }}</h1>
+    <button type="button" class="btn btn--primary btn--sm" (click)="showForm() ? cancelForm() : openCreate()">
+      {{ (showForm() ? 'ownerServices.cancel' : 'ownerServices.addService') | transloco }}
+    </button>
+  </div>
+
+  @if (showForm()) {
+    <div class="entity-form" @fadeIn>
+      <div class="form-field">
+        <label for="sName">{{ 'ownerServices.nameLabel' | transloco }}</label>
+        <input
+          id="sName"
+          type="text"
+          [ngModel]="formName()"
+          (ngModelChange)="formName.set($event)"
+        />
+      </div>
+      <div class="entity-form__row">
+        <div class="form-field">
+          <label for="sPrice">{{ 'ownerServices.priceLabel' | transloco }}</label>
+          <input
+            id="sPrice"
+            type="number"
+            min="0"
+            [ngModel]="formPrice()"
+            (ngModelChange)="formPrice.set($event)"
+          />
+        </div>
+        <div class="form-field">
+          <label for="sDuration">{{ 'ownerServices.durationLabel' | transloco }}</label>
+          <input
+            id="sDuration"
+            type="number"
+            min="1"
+            [ngModel]="formDuration()"
+            (ngModelChange)="formDuration.set($event)"
+          />
+        </div>
+      </div>
+      <div class="form-field">
+        <label for="sCategory">{{ 'ownerServices.categoryLabel' | transloco }}</label>
+        <input
+          id="sCategory"
+          type="text"
+          placeholder="{{ 'ownerServices.categoryPlaceholder' | transloco }}"
+          [ngModel]="formCategory()"
+          (ngModelChange)="formCategory.set($event)"
+        />
+      </div>
+      <button type="button" class="btn btn--primary btn--block" [disabled]="saving()" (click)="submitForm()">
+        {{ (saving() ? 'ownerServices.saving' : editingId() ? 'ownerServices.saveChanges' : 'ownerServices.addServiceBtn') | transloco }}
+      </button>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="list-skeleton">
+      <app-skeleton height="72px" radius="1rem" />
+      <app-skeleton height="72px" radius="1rem" />
+    </div>
+  } @else if (services().length === 0) {
+    <div class="empty-state">
+      <h2>{{ 'ownerServices.noServicesTitle' | transloco }}</h2>
+      <p>{{ 'ownerServices.noServicesSubtitle' | transloco }}</p>
+    </div>
+  } @else {
+    <div class="entity-list">
+      @for (service of services(); track service.id) {
+        <div class="entity-card">
+          <div class="entity-card__info">
+            <span class="entity-card__name">{{ service.name }}</span>
+            <span class="entity-card__meta">
+              {{ service.durationMinutes }} min &middot; ₹{{ service.price }}
+              @if (service.category) { &middot; {{ service.category }} }
+            </span>
+          </div>
+          <div class="entity-card__actions">
+            <button type="button" class="pill" [class]="service.isActive ? 'pill--success' : 'pill--neutral'" (click)="toggleActive(service)">
+              {{ (service.isActive ? 'ownerServices.active' : 'ownerServices.inactive') | transloco }}
+            </button>
+            <button type="button" class="btn btn--ghost btn--sm" (click)="openEdit(service)">{{ 'ownerServices.edit' | transloco }}</button>
+            <button type="button" class="btn btn--ghost btn--sm" (click)="remove(service)">{{ 'ownerServices.delete' | transloco }}</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

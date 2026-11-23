@@ -1,0 +1,13 @@
+<div class="customer-shell">
+  <header class="customer-header">
+    <a routerLink="/" class="customer-header__brand">
+      <span class="customer-header__mark">SY</span>
+      <span>{{ 'customerLayout.brand' | transloco }}</span>
+    </a>
+    <app-language-switcher />
+  </header>
+
+  <main class="customer-main" [@routeFade]="prepareRoute(outlet)">
+    <router-outlet #outlet="outlet" />
+  </main>
+</div>

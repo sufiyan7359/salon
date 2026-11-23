@@ -1,0 +1,6 @@
+@use 'mixins' as *;
+
+.skeleton {
+  display: block;
+  @include shimmer;
+}

@@ -1,0 +1,81 @@
+databases:
+  - name: shadab-yaseen-salon-db
+    databaseName: salon_db
+    user: salon_user
+    plan: free
+
+services:
+  - type: web
+    name: shadab-yaseen-salon-api
+    runtime: node
+    plan: free
+    rootDir: salon-backend
+    # NODE_ENV=production below makes plain `npm install` skip
+    # devDependencies (nest CLI, typescript) - --include=dev forces them
+    # in since they're needed to actually build, even though they're not
+    # needed at runtime.
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm run migration:run:prod && node dist/main
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ORIGIN
+        value: https://shadab-yaseen-salon-app.onrender.com
+      - key: DB_HOST
+        fromDatabase:
+          name: shadab-yaseen-salon-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: shadab-yaseen-salon-db
+          property: port
+      - key: DB_USERNAME
+        fromDatabase:
+          name: shadab-yaseen-salon-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: shadab-yaseen-salon-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: shadab-yaseen-salon-db
+          property: database
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: OTP_EXPIRES_IN_MINUTES
+        value: 5
+      - key: OTP_LENGTH
+        value: 6
+      # Left blank on purpose - the app safely falls back to stub mode
+      # (OTP codes logged, no real SMS) until these are filled in via the
+      # Render dashboard. Set OTP_PROVIDER=twilio once the other three
+      # are filled in to switch on real SMS delivery.
+      - key: OTP_PROVIDER
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_FROM_NUMBER
+        sync: false
+
+  # Render's native "static site" build (npm install/build auto-detected by
+  # Render itself) kept failing with an unexplained, undiagnoseable
+  # "npm error Invalid Version" before our build command ever ran - happened
+  # with every Node version tried and survived a build-cache clear. Switched
+  # to Docker so this repo's own Dockerfile (Node -> Angular build -> nginx)
+  # fully controls the build, sidestepping whatever's broken in Render's
+  # static-site auto-detection.
+  - type: web
+    name: shadab-yaseen-salon-app
+    runtime: docker
+    plan: free
+    rootDir: salon-frontend
+    dockerfilePath: ./Dockerfile

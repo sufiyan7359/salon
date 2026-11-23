@@ -1,0 +1,297 @@
+@use 'sass:color';
+@use 'variables' as *;
+@use 'mixins' as *;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  // Reserve room for the fixed two-button CTA bar (mobile only) so content
+  // isn't permanently hidden behind it when scrolled to the bottom.
+  padding-bottom: calc(9.5rem + env(safe-area-inset-bottom, 0px));
+
+  @include desktop-up {
+    padding-bottom: $space-8;
+  }
+}
+
+.landing-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+  padding: $space-5;
+}
+
+.my-entry-banner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: $space-4;
+  // Pulled up to overlap the bottom of the hero cover, so it reads as one
+  // connected hero unit instead of two separate "waiting" blocks stacked
+  // back to back.
+  margin: -2.5rem $space-5 0;
+  padding: $space-4 $space-5;
+  border-radius: $radius-lg;
+  background: $color-primary;
+  color: $color-text-inverse;
+  text-decoration: none;
+  box-shadow: $shadow-glow;
+  @include press-scale;
+}
+
+.my-entry-banner__token {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-right: $space-4;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.my-entry-banner__token-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+}
+
+.my-entry-banner__token-number {
+  font-family: $font-display;
+  font-size: $fs-xl;
+  font-weight: 700;
+}
+
+.my-entry-banner__info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.my-entry-banner__status {
+  font-weight: 600;
+}
+
+.my-entry-banner__detail {
+  font-size: $fs-xs;
+  opacity: 0.8;
+}
+
+.my-entry-banner__arrow {
+  font-size: $fs-lg;
+  opacity: 0.8;
+}
+
+.hero {
+  position: relative;
+}
+
+.hero__cover {
+  position: relative;
+  height: 140px;
+  background: $gradient-brand;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @include tablet-up {
+    height: 180px;
+  }
+}
+
+.hero__badge {
+  position: absolute;
+  top: $space-4;
+  right: $space-4;
+
+  // Semantic pill colors (translucent amber/green) are tuned for a plain
+  // light surface - on top of the hero gradient/photo they lose contrast
+  // and become hard to read. Give the badge its own opaque glass backing
+  // so it stays legible regardless of what's behind it, and bump the pill
+  // up to a solid, higher-contrast treatment inside that context.
+  .pill {
+    @include glass;
+    box-shadow: $shadow-sm;
+
+    &.pill--success {
+      background: rgba(255, 255, 255, 0.85);
+      color: color.adjust($color-success, $lightness: -12%);
+    }
+
+    &.pill--warning {
+      background: rgba(255, 255, 255, 0.85);
+      color: color.adjust($color-warning, $lightness: -15%);
+    }
+  }
+}
+
+.hero__body {
+  padding: $space-5;
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+
+  h1 {
+    font-size: $fs-2xl;
+  }
+}
+
+.hero__address,
+.hero__hours {
+  color: $color-text-muted;
+  font-size: $fs-sm;
+}
+
+.hero__rating {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  font-size: $fs-sm;
+  color: $color-text-muted;
+}
+
+.hero__description {
+  margin-top: $space-2;
+  font-size: $fs-base;
+}
+
+.section {
+  padding: 0 $space-5;
+  margin-top: $space-6;
+}
+
+.section__title {
+  font-size: $fs-lg;
+  margin-bottom: $space-4;
+}
+
+.service-list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.service-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  @include card;
+  padding: $space-4;
+  @include hover-lift;
+}
+
+.service-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.service-card__name {
+  font-weight: 600;
+}
+
+.service-card__category {
+  font-size: $fs-xs;
+  color: $color-text-muted;
+  text-transform: capitalize;
+}
+
+.service-card__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.service-card__duration {
+  font-size: $fs-xs;
+  color: $color-text-muted;
+}
+
+.service-card__price {
+  font-weight: 700;
+  color: $color-primary;
+}
+
+.staff-row {
+  display: flex;
+  gap: $space-4;
+  overflow-x: auto;
+  padding-bottom: $space-2;
+}
+
+.staff-avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $space-2;
+  min-width: 72px;
+}
+
+.staff-avatar__circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: $gradient-brand-soft;
+  color: $color-primary;
+  font-weight: 700;
+  font-size: $fs-lg;
+}
+
+.staff-avatar__name {
+  font-size: $fs-xs;
+  color: $color-text-muted;
+  text-align: center;
+}
+
+.review-list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.review-item {
+  @include card;
+  padding: $space-4;
+}
+
+.review-item__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $space-2;
+}
+
+.review-item__name {
+  font-weight: 600;
+}
+
+.review-item__comment {
+  font-size: $fs-sm;
+  color: $color-text-muted;
+}
+
+.cta-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  padding: $space-4 $space-5 calc($space-4 + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(to top, $color-bg 60%, transparent);
+
+  @include desktop-up {
+    position: static;
+    max-width: 320px;
+    margin: $space-8 auto 0;
+    background: none;
+  }
+}

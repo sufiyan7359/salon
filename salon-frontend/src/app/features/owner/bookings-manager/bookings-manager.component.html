@@ -1,0 +1,86 @@
+<div class="page">
+  <div class="page__header">
+    <h1>{{ 'ownerBookings.title' | transloco }}</h1>
+  </div>
+
+  @if (loading()) {
+    <div class="list-skeleton">
+      <app-skeleton height="80px" radius="1rem" />
+      <app-skeleton height="80px" radius="1rem" />
+    </div>
+  } @else {
+    <h2 class="section-label">{{ 'ownerBookings.upcomingTitle' | transloco: { count: upcoming().length } }}</h2>
+    @if (upcoming().length === 0) {
+      <div class="empty-state">
+        <h2>{{ 'ownerBookings.noUpcomingTitle' | transloco }}</h2>
+        <p>{{ 'ownerBookings.noUpcomingSubtitle' | transloco }}</p>
+      </div>
+    } @else {
+      <div class="entity-list">
+        @for (booking of upcoming(); track booking.id) {
+          <div class="entity-card" @fadeIn>
+            <div class="entity-card__info">
+              <span class="entity-card__name">{{ booking.customer?.name || booking.customer?.phoneNumber }}</span>
+              <span class="entity-card__meta">
+                {{ booking.service.name }} &middot; {{ booking.bookingDate }} {{ 'common.at' | transloco }} {{ booking.bookingTime }}
+                @if (booking.staff) { &middot; {{ 'common.with' | transloco }} {{ booking.staff.name }} }
+              </span>
+            </div>
+            <div class="entity-card__actions">
+              <span class="pill" [class]="booking.status === 'confirmed' ? 'pill--success' : 'pill--warning'">
+                {{ 'bookingStatus.' + booking.status | transloco }}
+              </span>
+              @if (booking.status === 'pending') {
+                <button
+                  type="button"
+                  class="btn btn--primary btn--sm"
+                  [disabled]="actioningId() === booking.id"
+                  (click)="confirm(booking)"
+                >
+                  {{ 'ownerBookings.confirm' | transloco }}
+                </button>
+              }
+              @if (booking.status === 'confirmed') {
+                <button
+                  type="button"
+                  class="btn btn--primary btn--sm"
+                  [disabled]="actioningId() === booking.id"
+                  (click)="complete(booking)"
+                >
+                  {{ 'ownerBookings.complete' | transloco }}
+                </button>
+              }
+              <button
+                type="button"
+                class="btn btn--ghost btn--sm"
+                [disabled]="actioningId() === booking.id"
+                (click)="cancel(booking)"
+              >
+                {{ 'ownerBookings.cancel' | transloco }}
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    @if (past().length > 0) {
+      <h2 class="section-label">{{ 'ownerBookings.pastTitle' | transloco: { count: past().length } }}</h2>
+      <div class="entity-list">
+        @for (booking of past(); track booking.id) {
+          <div class="entity-card">
+            <div class="entity-card__info">
+              <span class="entity-card__name">{{ booking.customer?.name || booking.customer?.phoneNumber }}</span>
+              <span class="entity-card__meta">
+                {{ booking.service.name }} &middot; {{ booking.bookingDate }} {{ 'common.at' | transloco }} {{ booking.bookingTime }}
+              </span>
+            </div>
+            <span class="pill" [class]="booking.status === 'completed' ? 'pill--success' : 'pill--danger'">
+              {{ 'bookingStatus.' + booking.status | transloco }}
+            </span>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

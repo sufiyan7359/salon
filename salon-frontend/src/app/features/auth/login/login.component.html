@@ -1,0 +1,61 @@
+<div class="login-card" @fadeIn>
+  <div class="login-card__top">
+    <div class="login-card__brand">
+      <span class="login-card__mark">SY</span>
+      <span>{{ 'customerLayout.brand' | transloco }}</span>
+    </div>
+    <app-language-switcher />
+  </div>
+  <h1>{{ (mode() === 'login' ? 'login.ownerSignIn' : 'login.setupAccountTitle') | transloco }}</h1>
+  <p class="login-card__subtitle">
+    {{ (mode() === 'login' ? 'login.manageSubtitle' : 'login.oneTimeSetupSubtitle') | transloco }}
+  </p>
+
+  <form (ngSubmit)="submit()">
+    @if (mode() === 'register') {
+      <div class="form-field">
+        <label for="name">{{ 'login.yourName' | transloco }}</label>
+        <input
+          id="name"
+          type="text"
+          [ngModel]="name()"
+          (ngModelChange)="name.set($event)"
+          name="name"
+          required
+        />
+      </div>
+    }
+
+    <div class="form-field">
+      <label for="email">{{ 'login.email' | transloco }}</label>
+      <input
+        id="email"
+        type="email"
+        [ngModel]="email()"
+        (ngModelChange)="email.set($event)"
+        name="email"
+        required
+      />
+    </div>
+
+    <div class="form-field">
+      <label for="password">{{ 'login.password' | transloco }}</label>
+      <input
+        id="password"
+        type="password"
+        [ngModel]="password()"
+        (ngModelChange)="password.set($event)"
+        name="password"
+        required
+      />
+    </div>
+
+    <button type="submit" class="btn btn--primary btn--block" [disabled]="submitting()">
+      {{ submitting() ? ('login.pleaseWait' | transloco) : (mode() === 'login' ? ('login.signIn' | transloco) : ('login.createAccount' | transloco)) }}
+    </button>
+  </form>
+
+  <button type="button" class="login-card__toggle" (click)="toggleMode()">
+    {{ (mode() === 'login' ? 'login.firstTimeHere' : 'login.alreadyHaveAccount') | transloco }}
+  </button>
+</div>

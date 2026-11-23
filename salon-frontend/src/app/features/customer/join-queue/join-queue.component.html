@@ -1,0 +1,184 @@
+@if (loading()) {
+  <div class="join-skeleton">
+    <app-skeleton height="2rem" width="50%" />
+    <app-skeleton height="120px" radius="1rem" />
+    <app-skeleton height="120px" radius="1rem" />
+  </div>
+} @else {
+  <div class="step-indicator">
+    @for (s of ['phone', 'otp', 'services', 'confirm']; track s) {
+      <span
+        class="step-indicator__dot"
+        [class.active]="step() === s"
+        [class.done]="['phone','otp','services','confirm'].indexOf(step()) > ['phone','otp','services','confirm'].indexOf(s)"
+      ></span>
+    }
+  </div>
+
+  <div class="step-container">
+    @if (step() === 'phone') {
+      <div class="step" @fadeSlide>
+        <h1>{{ 'joinQueue.enterMobileTitle' | transloco }}</h1>
+        <p class="step__subtitle">{{ 'joinQueue.enterMobileSubtitle' | transloco }}</p>
+        <div class="form-field">
+          <label for="phone">{{ 'joinQueue.mobileLabel' | transloco }}</label>
+          <input
+            id="phone"
+            type="tel"
+            placeholder="98765 43210"
+            [ngModel]="phoneNumber()"
+            (ngModelChange)="phoneNumber.set($event)"
+            (keyup.enter)="sendOtp()"
+          />
+        </div>
+        <button
+          type="button"
+          class="btn btn--primary btn--block"
+          [disabled]="sendingOtp()"
+          (click)="sendOtp()"
+        >
+          {{ (sendingOtp() ? 'joinQueue.sending' : 'joinQueue.sendOtp') | transloco }}
+        </button>
+      </div>
+    }
+
+    @if (step() === 'otp') {
+      <div class="step" @fadeSlide>
+        <h1>{{ 'joinQueue.enterCodeTitle' | transloco }}</h1>
+        <p class="step__subtitle">{{ 'joinQueue.sentTo' | transloco: { phone: phoneNumber() } }}</p>
+        @if (devOtpHint()) {
+          <p class="dev-hint">{{ 'joinQueue.devModeHint' | transloco }} <strong>{{ devOtpHint() }}</strong></p>
+        }
+        <div class="form-field">
+          <label for="otp">{{ 'joinQueue.codeLabel' | transloco }}</label>
+          <input
+            id="otp"
+            type="text"
+            inputmode="numeric"
+            maxlength="6"
+            placeholder="123456"
+            [ngModel]="otpCode()"
+            (ngModelChange)="otpCode.set($event)"
+            (keyup.enter)="verifyOtp()"
+          />
+        </div>
+        <div class="form-field">
+          <label for="name">{{ 'joinQueue.nameOptionalLabel' | transloco }}</label>
+          <input
+            id="name"
+            type="text"
+            placeholder="{{ 'joinQueue.namePlaceholder' | transloco }}"
+            [ngModel]="customerName()"
+            (ngModelChange)="customerName.set($event)"
+          />
+        </div>
+        <button
+          type="button"
+          class="btn btn--primary btn--block"
+          [disabled]="verifying()"
+          (click)="verifyOtp()"
+        >
+          {{ (verifying() ? 'joinQueue.verifying' : 'joinQueue.verifyContinue') | transloco }}
+        </button>
+        <button
+          type="button"
+          class="btn btn--ghost btn--block"
+          [disabled]="resendCooldown() > 0 || sendingOtp()"
+          (click)="sendOtp()"
+        >
+          {{ resendCooldown() > 0 ? ('joinQueue.resendIn' | transloco: { seconds: resendCooldown() }) : ('joinQueue.resendOtp' | transloco) }}
+        </button>
+      </div>
+    }
+
+    @if (step() === 'services') {
+      <div class="step" @fadeSlide>
+        <h1>{{ 'joinQueue.chooseServicesTitle' | transloco }}</h1>
+        <p class="step__subtitle">{{ 'joinQueue.chooseServicesSubtitle' | transloco }}</p>
+
+        <div class="service-select-list">
+          @for (service of services(); track service.id) {
+            <label class="service-select" [class.selected]="selectedServiceIds().has(service.id)">
+              <input
+                type="checkbox"
+                [checked]="selectedServiceIds().has(service.id)"
+                (change)="toggleService(service.id)"
+              />
+              <span class="service-select__info">
+                <span class="service-select__name">{{ service.name }}</span>
+                <span class="service-select__meta">{{ service.durationMinutes }} min &middot; ₹{{ service.price }}</span>
+              </span>
+            </label>
+          }
+        </div>
+
+        @if (staff().length > 0) {
+          <h2 class="step__section-title">{{ 'joinQueue.preferredStaffOptional' | transloco }}</h2>
+          <div class="staff-select-list">
+            <button
+              type="button"
+              class="staff-chip"
+              [class.selected]="selectedStaffId() === undefined"
+              (click)="selectStaff(undefined)"
+            >
+              {{ 'common.noPreference' | transloco }}
+            </button>
+            @for (member of staff(); track member.id) {
+              <button
+                type="button"
+                class="staff-chip"
+                [class.selected]="selectedStaffId() === member.id"
+                (click)="selectStaff(member.id)"
+              >
+                {{ member.name }}
+              </button>
+            }
+          </div>
+        }
+
+        <button type="button" class="btn btn--primary btn--block" (click)="goToConfirm()">
+          {{ 'joinQueue.continueBtn' | transloco }}
+        </button>
+      </div>
+    }
+
+    @if (step() === 'confirm' && joinSuccess()) {
+      <div class="step step--center" @fadeSlide>
+        <div class="success-check" @successPop>&check;</div>
+        <h1>{{ 'joinQueue.inQueueTitle' | transloco }}</h1>
+      </div>
+    } @else if (step() === 'confirm') {
+      <div class="step" @fadeSlide>
+        <h1>{{ 'joinQueue.confirmJoinTitle' | transloco }}</h1>
+        <div class="summary-card">
+          @for (service of selectedServices(); track service.id) {
+            <div class="summary-card__row">
+              <span>{{ service.name }}</span>
+              <span>₹{{ service.price }}</span>
+            </div>
+          }
+          <div class="summary-card__divider"></div>
+          <div class="summary-card__row summary-card__row--total">
+            <span>{{ 'joinQueue.totalLabel' | transloco: { minutes: totalDuration() } }}</span>
+            <span>₹{{ totalPrice() }}</span>
+          </div>
+          @if (selectedStaffName(); as name) {
+            <p class="summary-card__staff">{{ 'joinQueue.withStaff' | transloco: { name } }}</p>
+          }
+        </div>
+
+        <button type="button" class="btn btn--ghost btn--block" (click)="backToServices()">
+          {{ 'joinQueue.editSelection' | transloco }}
+        </button>
+        <button
+          type="button"
+          class="btn btn--primary btn--block"
+          [disabled]="joining()"
+          (click)="confirmJoin()"
+        >
+          {{ (joining() ? 'joinQueue.joining' : 'joinQueue.joinQueueBtn') | transloco }}
+        </button>
+      </div>
+    }
+  </div>
+}

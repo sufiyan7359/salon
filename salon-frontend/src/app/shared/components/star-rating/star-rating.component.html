@@ -1,0 +1,19 @@
+<span
+  class="star-rating"
+  [class.interactive]="interactive()"
+  [class.star-rating--sm]="size() === 'sm'"
+  (mouseleave)="onLeave()"
+>
+  @for (star of stars; track star) {
+    <button
+      type="button"
+      class="star"
+      [class.filled]="isFilled(star)"
+      [disabled]="!interactive()"
+      (click)="select(star)"
+      (mouseenter)="onHover(star)"
+    >
+      ★
+    </button>
+  }
+</span>
